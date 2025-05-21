@@ -5,15 +5,9 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\BackendTests\GCS;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
-use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Psr\Log\NullLogger;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -32,16 +26,14 @@ class DataLoaderGCSTest extends BaseDataLoaderTest
 
     public function testLoadInputData()
     {
-        $config = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-docker-demo-testConfig-gcs.test',
-                        ],
+        $storageConfig = [
+            'input' => [
+                'tables' => [
+                    [
+                        'source' => 'in.c-docker-demo-testConfig-gcs.test',
                     ],
-                    'files' => [['tags' => ['docker-demo-test-gcs']]],
                 ],
+                'files' => [['tags' => ['docker-demo-test-gcs']]],
             ],
         ];
         $fs = new Filesystem();
@@ -63,14 +55,11 @@ class DataLoaderGCSTest extends BaseDataLoaderTest
         );
         sleep(1);
 
-        $jobDefinition = new JobDefinition($config, $this->getNoDefaultBucketComponent());
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            $jobDefinition,
+        $dataLoader = $this->getInputDataLoader(
+            storageConfig: $storageConfig,
+            component: $this->getNoDefaultBucketComponent(),
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
 
         $manifest = json_decode(
             file_get_contents(

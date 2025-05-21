@@ -4,35 +4,18 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Generator;
-use Keboola\CommonExceptions\ApplicationExceptionInterface;
 use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\BaseType;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\Datatype\Definition\Snowflake;
-use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
-use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
-use Keboola\InputMapping\Table\Result;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
-use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
 use Keboola\OutputMapping\Writer\Table\MappingDestination;
-use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
-use Keboola\StorageApi\Options\Components\Configuration;
-use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
-use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
-use Keboola\StorageApiBranch\StorageApiToken;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderTest extends BaseDataLoaderTest
@@ -54,7 +37,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
             (string) json_encode(['destination' => 'sliced']),
         );
-        $dataLoader = $this->getDataLoader([]);
+        $dataLoader = $this->getOutputDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
 
@@ -62,8 +45,6 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertTrue(
             $this->clientWrapper->getBasicClient()->tableExists('in.c-docker-demo-testConfig.sliced'),
         );
-        self::assertEquals([], $dataLoader->getWorkspaceCredentials());
-        self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
     public function testExecutorDefaultBucketOverride(): void
@@ -87,201 +68,22 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
             (string) json_encode(['destination' => 'sliced']),
         );
-        $dataLoader = $this->getDataLoader(['output' => ['default_bucket' => 'in.c-test-override']]);
+        $dataLoader = $this->getOutputDataLoader(['output' => ['default_bucket' => 'in.c-test-override']]);
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
 
         $tableQueue->waitForAll();
         self::assertFalse($this->clientWrapper->getBasicClient()->tableExists('in.c-test-demo-testConfig.sliced'));
         self::assertTrue($this->clientWrapper->getBasicClient()->tableExists('in.c-test-override.sliced'));
-        self::assertEquals([], $dataLoader->getWorkspaceCredentials());
-        self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
     public function testNoConfigDefaultBucketException(): void
     {
-        $dataLoader =new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $this->getDefaultBucketComponent()),
-        );
+        $dataLoader = $this->getOutputDataLoader([], configId: null);
 
-        self::expectException(UserExceptionInterface::class);
-        self::expectExceptionMessage('Configuration ID not set');
+        $this->expectException(UserExceptionInterface::class);
+        $this->expectExceptionMessage('Configuration ID not set');
         $dataLoader->storeOutput();
-    }
-
-    public function testExecutorInvalidOutputMapping(): void
-    {
-        $config = [
-            'input' => [
-                'tables' => [
-                    [
-                        'source' => 'in.c-docker-demo-testConfig.test',
-                    ],
-                ],
-            ],
-            'output' => [
-                'tables' => [
-                    [
-                        'source' => 'sliced.csv',
-                        'destination' => 'in.c-docker-demo-testConfig.out',
-                        // erroneous lines
-                        'primary_key' => 'col1',
-                        'incremental' => 1,
-                    ],
-                ],
-            ],
-        ];
-        $fs = new Filesystem();
-        $fs->dumpFile(
-            $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
-        );
-        self::expectException(UserExceptionInterface::class);
-        self::expectExceptionMessage(
-            'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"',
-        );
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-        );
-        $dataLoader->storeOutput();
-    }
-
-    /** @dataProvider invalidStagingProvider */
-    public function testWorkspaceInvalid(string $input, string $output, string $error): void
-    {
-        $component = new ComponentSpecification([
-            'id' => 'docker-demo',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'master',
-                ],
-                'staging-storage' => [
-                    'input' => $input,
-                    'output' => $output,
-                ],
-            ],
-        ]);
-        self::expectException(ApplicationExceptionInterface::class);
-        self::expectExceptionMessage($error);
-        new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $component),
-        );
-    }
-
-    public function invalidStagingProvider(): array
-    {
-        return [
-            'snowflake-bigquery' => [
-                'workspace-snowflake',
-                'workspace-bigquery',
-                'Component staging setting mismatch - input: "workspace-snowflake", output: "workspace-bigquery".',
-            ],
-            'bigquery-snowflake' => [
-                'workspace-bigquery',
-                'workspace-snowflake',
-                'Component staging setting mismatch - input: "workspace-bigquery", output: "workspace-snowflake".',
-            ],
-        ];
-    }
-
-    public function testWorkspace(): void
-    {
-        $component = new ComponentSpecification([
-            'id' => 'docker-demo',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'master',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $component),
-        );
-        $dataLoader->storeOutput();
-        $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(
-            ['host', 'warehouse', 'database', 'schema', 'user', 'password', 'privateKey', 'account'],
-            array_keys($credentials),
-        );
-        self::assertNotEmpty($credentials['user']);
-        self::assertNotNull($dataLoader->getWorkspaceCredentials());
-    }
-
-    /**
-     * @dataProvider readonlyFlagProvider
-     */
-    public function testWorkspaceReadOnly(bool $readOnlyWorkspace): void
-    {
-        $component = new ComponentSpecification([
-            'id' => 'docker-demo',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'master',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-        $config = [
-            'storage' => [
-                'input' => [
-                    'read_only_storage_access' => $readOnlyWorkspace,
-                    'tables' => [],
-                    'files' => [],
-                ],
-            ],
-        ];
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
-        );
-        $dataLoader->storeOutput();
-        $credentials = $dataLoader->getWorkspaceCredentials();
-
-        $schemaName = $credentials['schema'];
-        $workspacesApi = new Workspaces($this->clientWrapper->getBasicClient());
-        $workspaces = $workspacesApi->listWorkspaces();
-        $readonlyWorkspace = null;
-        foreach ($workspaces as $workspace) {
-            if (isset($workspace['connection']['schema']) && $workspace['connection']['schema'] === $schemaName) {
-                $readonlyWorkspace = $workspace;
-            }
-        }
-        self::assertNotNull($readonlyWorkspace);
-        self::assertSame($readOnlyWorkspace, $readonlyWorkspace['readOnlyStorageAccess']);
-        $dataLoader->cleanWorkspace();
-    }
-
-    public function readonlyFlagProvider(): Generator
-    {
-        yield 'readonly on' => [true];
-        yield 'readonly off' => [false];
     }
 
     public function testBranchMappingDisabled(): void
@@ -312,30 +114,28 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-docker-demo-testConfig.test',
-                            'destination' => 'test.csv',
-                        ],
+        $storageConfig = [
+            'input' => [
+                'tables' => [
+                    [
+                        'source' => 'in.c-docker-demo-testConfig.test',
+                        'destination' => 'test.csv',
                     ],
                 ],
             ],
         ];
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getInputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
         );
-        self::expectException(UserExceptionInterface::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserExceptionInterface::class);
+        $this->expectExceptionMessage(
             'The buckets "in.c-docker-demo-testConfig" come from a development ' .
             'branch and must not be used directly in input mapping.',
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+
+        $dataLoader->loadInputData();
     }
 
     public function testBranchMappingEnabled(): void
@@ -374,27 +174,25 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
             'features' => ['dev-mapping-allowed'],
         ]);
-        $config = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-docker-demo-testConfig.test',
-                            'destination' => 'test.csv',
-                        ],
+        $storageConfig = [
+            'input' => [
+                'tables' => [
+                    [
+                        'source' => 'in.c-docker-demo-testConfig.test',
+                        'destination' => 'test.csv',
                     ],
                 ],
             ],
         ];
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+
+        $dataLoader = $this->getInputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
         );
-        $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
-        self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
-        self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
+
+        $storageState = $dataLoader->loadInputData();
+        self::assertCount(1, $storageState->inputTableResult->getTables());
+        self::assertCount(0, $storageState->inputFileStateList->jsonSerialize());
     }
 
     public function testTypedTableCreate(): void
@@ -418,27 +216,25 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'typed-data.csv',
-                            'destination' => 'in.c-docker-demo-testConfig.fixed-type-test',
-                            'columns' => ['int', 'string', 'decimal', 'float', 'bool', 'date', 'timestamp'],
-                            'primary_key' => ['int'],
-                            'column_metadata' => [
-                                'int' => (new GenericStorage('int', ['nullable' => false]))->toMetadata(),
-                                'string' => (new GenericStorage(
-                                    'varchar',
-                                    ['length' => '17', 'nullable' => false],
-                                ))->toMetadata(),
-                                'decimal' => (new GenericStorage('decimal', ['length' => '10.2']))->toMetadata(),
-                                'float' => (new GenericStorage('float'))->toMetadata(),
-                                'bool' => (new GenericStorage('bool'))->toMetadata(),
-                                'date' => (new GenericStorage('date'))->toMetadata(),
-                                'timestamp' => (new GenericStorage('timestamp'))->toMetadata(),
-                            ],
+        $storageConfig = [
+            'output' => [
+                'tables' => [
+                    [
+                        'source' => 'typed-data.csv',
+                        'destination' => 'in.c-docker-demo-testConfig.fixed-type-test',
+                        'columns' => ['int', 'string', 'decimal', 'float', 'bool', 'date', 'timestamp'],
+                        'primary_key' => ['int'],
+                        'column_metadata' => [
+                            'int' => (new GenericStorage('int', ['nullable' => false]))->toMetadata(),
+                            'string' => (new GenericStorage(
+                                'varchar',
+                                ['length' => '17', 'nullable' => false],
+                            ))->toMetadata(),
+                            'decimal' => (new GenericStorage('decimal', ['length' => '10.2']))->toMetadata(),
+                            'float' => (new GenericStorage('float'))->toMetadata(),
+                            'bool' => (new GenericStorage('bool'))->toMetadata(),
+                            'date' => (new GenericStorage('date'))->toMetadata(),
+                            'timestamp' => (new GenericStorage('timestamp'))->toMetadata(),
                         ],
                     ],
                 ],
@@ -450,16 +246,17 @@ class DataLoaderTest extends BaseDataLoaderTest
                 (string) getenv('STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES'),
             ),
         );
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
-        $tableQueue->waitForAll();
 
+        $tableQueue->waitForAll();
         $tableDetails = $clientWrapper->getBasicClient()->getTable('in.c-docker-demo-testConfig.fixed-type-test');
         self::assertTrue($tableDetails['isTyped']);
 
@@ -498,73 +295,71 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'dataTypesSupport' => 'authoritative',
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'typed-data.csv',
-                            'destination' => $tableId,
-                            'schema' => [
-                                [
-                                    'name' => 'int',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::INTEGER,
-                                        ],
-                                    ],
-                                    'primary_key' => true,
-                                    'nullable' => false,
-                                ],
-                                [
-                                    'name' => 'string',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                            'length' => '17',
-                                        ],
-                                    ],
-                                    'nullable' => false,
-                                ],
-                                [
-                                    'name' => 'decimal',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::NUMERIC,
-                                            'length' => '10,2',
-                                        ],
+        $storageConfig = [
+            'output' => [
+                'tables' => [
+                    [
+                        'source' => 'typed-data.csv',
+                        'destination' => $tableId,
+                        'schema' => [
+                            [
+                                'name' => 'int',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::INTEGER,
                                     ],
                                 ],
-                                [
-                                    'name' => 'float',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::FLOAT,
-                                        ],
+                                'primary_key' => true,
+                                'nullable' => false,
+                            ],
+                            [
+                                'name' => 'string',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                        'length' => '17',
                                     ],
                                 ],
-                                [
-                                    'name' => 'bool',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::BOOLEAN,
-                                        ],
+                                'nullable' => false,
+                            ],
+                            [
+                                'name' => 'decimal',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::NUMERIC,
+                                        'length' => '10,2',
                                     ],
                                 ],
-                                [
-                                    'name' => 'date',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::DATE,
-                                        ],
+                            ],
+                            [
+                                'name' => 'float',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::FLOAT,
                                     ],
                                 ],
-                                [
-                                    'name' => 'timestamp',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::TIMESTAMP,
-                                        ],
+                            ],
+                            [
+                                'name' => 'bool',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::BOOLEAN,
+                                    ],
+                                ],
+                            ],
+                            [
+                                'name' => 'date',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::DATE,
+                                    ],
+                                ],
+                            ],
+                            [
+                                'name' => 'timestamp',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::TIMESTAMP,
                                     ],
                                 ],
                             ],
@@ -579,13 +374,14 @@ class DataLoaderTest extends BaseDataLoaderTest
                 (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
             ),
         );
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
+
         self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
@@ -632,38 +428,36 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         ]);
         $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'typed-data.csv',
-                            'destination' => $tableId,
-                            'schema' => [
-                                [
-                                    'name' => 'int',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::INTEGER,
-                                        ],
-                                    ],
-                                    'primary_key' => true,
-                                ],
-                                [
-                                    'name' => 'string',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                            'length' => '17',
-                                        ],
+            'output' => [
+                'tables' => [
+                    [
+                        'source' => 'typed-data.csv',
+                        'destination' => $tableId,
+                        'schema' => [
+                            [
+                                'name' => 'int',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::INTEGER,
                                     ],
                                 ],
-                                [
-                                    'name' => 'decimal',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::NUMERIC,
-                                            'length' => '10,2',
-                                        ],
+                                'primary_key' => true,
+                            ],
+                            [
+                                'name' => 'string',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                        'length' => '17',
+                                    ],
+                                ],
+                            ],
+                            [
+                                'name' => 'decimal',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::NUMERIC,
+                                        'length' => '10,2',
                                     ],
                                 ],
                             ],
@@ -686,14 +480,15 @@ class DataLoaderTest extends BaseDataLoaderTest
             }
         }
 
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $config,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
+
         $tableQueue->waitForAll();
 
         $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
@@ -790,45 +585,43 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'typed-data.csv',
-                            'destination' => $tableId,
-                            'description' => 'table description',
-                            'table_metadata' => [
-                                'key1' => 'value1',
-                                'key2' => 'value2',
-                            ],
-                            'schema' => [
-                                [
-                                    'name' => 'int',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::INTEGER,
-                                        ],
+        $storageConfig = [
+            'output' => [
+                'tables' => [
+                    [
+                        'source' => 'typed-data.csv',
+                        'destination' => $tableId,
+                        'description' => 'table description',
+                        'table_metadata' => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ],
+                        'schema' => [
+                            [
+                                'name' => 'int',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::INTEGER,
                                     ],
-                                    'primary_key' => true,
-                                    'nullable' => false,
-                                    'metadata' => [
-                                        'key1' => 'value1',
-                                        'key2' => 'value2',
+                                ],
+                                'primary_key' => true,
+                                'nullable' => false,
+                                'metadata' => [
+                                    'key1' => 'value1',
+                                    'key2' => 'value2',
 
+                                ],
+                            ],
+                            [
+                                'name' => 'string',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                        'length' => '17',
                                     ],
                                 ],
-                                [
-                                    'name' => 'string',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                            'length' => '17',
-                                        ],
-                                    ],
-                                    'description' => 'column description',
-                                    'nullable' => false,
-                                ],
+                                'description' => 'column description',
+                                'nullable' => false,
                             ],
                         ],
                     ],
@@ -841,13 +634,14 @@ class DataLoaderTest extends BaseDataLoaderTest
                 (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
             ),
         );
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
+
         self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
@@ -973,61 +767,59 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'typed-data.csv',
-                            'destination' => $tableId,
-                            'description' => 'table description',
-                            'table_metadata' => [
-                                'key1' => 'value1',
-                                'key2' => 'value2',
+        $storageConfig = [
+            'output' => [
+                'tables' => [
+                    [
+                        'source' => 'typed-data.csv',
+                        'destination' => $tableId,
+                        'description' => 'table description',
+                        'table_metadata' => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ],
+                        'schema' => [
+                            [
+                                'name' => 'Id',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                    ],
+                                ],
+                                'primary_key' => false,
+                                'nullable' => false,
                             ],
-                            'schema' => [
-                                [
-                                    'name' => 'Id',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                        ],
+                            [
+                                'name' => 'Name',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                        'length' => '255',
                                     ],
-                                    'primary_key' => false,
-                                    'nullable' => false,
                                 ],
-                                [
-                                    'name' => 'Name',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                            'length' => '255',
-                                        ],
+                                'primary_key' => true,
+                                'nullable' => false,
+                            ],
+                            [
+                                'name' => 'foo',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                        'length' => '500',
                                     ],
-                                    'primary_key' => true,
-                                    'nullable' => false,
                                 ],
-                                [
-                                    'name' => 'foo',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                            'length' => '500',
-                                        ],
+                                'primary_key' => true,
+                                'nullable' => false,
+                            ],
+                            [
+                                'name' => 'New Column',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                        'length' => '255',
                                     ],
-                                    'primary_key' => true,
-                                    'nullable' => false,
                                 ],
-                                [
-                                    'name' => 'New Column',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                            'length' => '255',
-                                        ],
-                                    ],
-                                    'nullable' => false,
-                                ],
+                                'nullable' => false,
                             ],
                         ],
                     ],
@@ -1040,14 +832,15 @@ class DataLoaderTest extends BaseDataLoaderTest
                 (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
             ),
         );
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
+
         $tableQueue->waitForAll();
 
         $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
@@ -1140,50 +933,48 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'typed-data.csv',
-                            'destination' => $tableId,
-                            'description' => 'table description',
-                            'table_metadata' => [
-                                'key1' => 'value1',
-                                'key2' => 'value2',
+        $storageConfig = [
+            'output' => [
+                'tables' => [
+                    [
+                        'source' => 'typed-data.csv',
+                        'destination' => $tableId,
+                        'description' => 'table description',
+                        'table_metadata' => [
+                            'key1' => 'value1',
+                            'key2' => 'value2',
+                        ],
+                        'schema' => [
+                            [
+                                'name' => 'varchar',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::STRING,
+                                    ],
+                                    'snowflake' => [
+                                        'type' => Snowflake::TYPE_NVARCHAR2,
+                                    ],
+                                ],
                             ],
-                            'schema' => [
-                                [
-                                    'name' => 'varchar',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::STRING,
-                                        ],
-                                        'snowflake' => [
-                                            'type' => Snowflake::TYPE_NVARCHAR2,
-                                        ],
+                            [
+                                'name' => 'number',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::INTEGER,
+                                    ],
+                                    'snowflake' => [
+                                        'type' => Snowflake::TYPE_INTEGER,
                                     ],
                                 ],
-                                [
-                                    'name' => 'number',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::INTEGER,
-                                        ],
-                                        'snowflake' => [
-                                            'type' => Snowflake::TYPE_INTEGER,
-                                        ],
+                            ],
+                            [
+                                'name' => 'float',
+                                'data_type' => [
+                                    'base' => [
+                                        'type' => BaseType::FLOAT,
                                     ],
-                                ],
-                                [
-                                    'name' => 'float',
-                                    'data_type' => [
-                                        'base' => [
-                                            'type' => BaseType::FLOAT,
-                                        ],
-                                        'snowflake' => [
-                                            'type' => Snowflake::TYPE_DOUBLE,
-                                        ],
+                                    'snowflake' => [
+                                        'type' => Snowflake::TYPE_DOUBLE,
                                     ],
                                 ],
                             ],
@@ -1198,14 +989,16 @@ class DataLoaderTest extends BaseDataLoaderTest
                 (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
             ),
         );
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
+
         $tableQueue->waitForAll();
 
         $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
@@ -1218,348 +1011,6 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertSame($expectedType, $columnDefinition['definition']['type']);
     }
 
-    public function testWorkspaceCleanupSuccess(): void
-    {
-        $componentId = 'keboola.runner-workspace-test';
-        $component = new ComponentSpecification([
-            'id' => $componentId,
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
-                    'tag' => '1.6.2',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
-        $configuration = new Configuration();
-        $configuration->setName('testWorkspaceCleanup');
-        $configuration->setComponentId($componentId);
-        $configuration->setConfiguration([]);
-        $componentsApi = new Components($this->clientWrapper->getBasicClient());
-        $configId = $componentsApi->addConfiguration($configuration)['id'];
-
-        $clientMock->expects(self::never())
-            ->method('apiPostJson');
-        $clientMock->expects(self::never())
-            ->method('apiDelete');
-
-        $clientWrapperMock = $this->createMock(ClientWrapper::class);
-        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
-        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
-
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
-
-        $dataLoader = new DataLoader(
-            $clientWrapperMock,
-            $logger,
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $component, $configId),
-        );
-        // immediately calling cleanWorkspace without using it means it was not initialized
-        $dataLoader->cleanWorkspace();
-
-        $listOptions = new ListConfigurationWorkspacesOptions();
-        $listOptions->setComponentId($componentId)->setConfigurationId($configId);
-        $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
-        self::assertCount(0, $workspaces);
-        $componentsApi->deleteConfiguration($componentId, $configId);
-    }
-
-    public function testWorkspaceCleanupWhenInitialized(): void
-    {
-        $componentId = 'keboola.runner-workspace-test';
-        $component = new ComponentSpecification([
-            'id' => $componentId,
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
-                    'tag' => '1.6.2',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
-        $configuration = new Configuration();
-        $configuration->setName('testWorkspaceCleanup');
-        $configuration->setComponentId($componentId);
-        $configuration->setConfiguration([]);
-        $componentsApi = new Components($this->clientWrapper->getBasicClient());
-        $configId = $componentsApi->addConfiguration($configuration)['id'];
-
-        $clientMock->method('apiPostJson')
-            ->willReturnCallback(function (...$args) {
-                return $this->clientWrapper->getBasicClient()->apiPostJson(...$args);
-            });
-        $clientMock->expects(self::once())
-            ->method('apiDelete')
-            ->willReturnCallback(function (...$args) {
-                return $this->clientWrapper->getBasicClient()->apiDelete(...$args);
-            });
-
-        $clientWrapperMock = $this->createMock(ClientWrapper::class);
-        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
-        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
-
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
-
-        $dataLoader = new DataLoader(
-            $clientWrapperMock,
-            $logger,
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $component, $configId),
-        );
-
-        // this causes the workspaces to initialize
-        $workspace = $dataLoader->getWorkspaceCredentials();
-
-        self::assertArrayHasKey('host', $workspace);
-        self::assertArrayHasKey('warehouse', $workspace);
-        self::assertArrayHasKey('database', $workspace);
-        self::assertArrayHasKey('schema', $workspace);
-        self::assertArrayHasKey('user', $workspace);
-        self::assertArrayHasKey('password', $workspace);
-        self::assertArrayHasKey('account', $workspace);
-
-        $dataLoader->cleanWorkspace();
-        $listOptions = new ListConfigurationWorkspacesOptions();
-        $listOptions->setComponentId($componentId)->setConfigurationId($configId);
-        $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
-        self::assertCount(0, $workspaces);
-        $componentsApi->deleteConfiguration($componentId, $configId);
-    }
-
-    public function workspaceCleanupFailureProvider(): Generator
-    {
-        yield 'Bad request' => [
-            'deleteException' => new ClientException('Bad request', 400),
-            'shouldBeLogged' => true,
-        ];
-        yield 'Not found' => [
-            'deleteException' => new ClientException('Workspace not found', 404),
-            'shouldBeLogged' => false,
-        ];
-        yield 'Unauthorized' => [
-            'deleteException' => new ClientException('Unauthorized', 401),
-            'shouldBeLogged' => true,
-        ];
-    }
-
-    /**
-     * @dataProvider workspaceCleanupFailureProvider
-     */
-    public function testWorkspaceCleanupFailure(
-        ClientException $deleteException,
-        bool $shouldBeLogged,
-    ): void {
-        $component = new ComponentSpecification([
-            'id' => 'keboola.runner-workspace-test',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
-                    'tag' => '1.6.2',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
-        $clientMock->method('apiPostJson')
-            ->willReturnCallback(function (...$args) {
-                return $this->clientWrapper->getBasicClient()->apiPostJson(...$args);
-            });
-        $clientMock->expects(self::once())
-            ->method('apiDelete')
-            ->willThrowException($deleteException)
-        ;
-
-        $clientWrapperMock = $this->createMock(ClientWrapper::class);
-        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
-        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
-
-        $configuration = new Configuration();
-        $configuration->setName('testWorkspaceCleanup');
-        $configuration->setComponentId('keboola.runner-workspace-test');
-        $configuration->setConfiguration([]);
-        $componentsApi = new Components($this->clientWrapper->getBasicClient());
-        $configId = $componentsApi->addConfiguration($configuration)['id'];
-
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
-
-        $dataLoader = new DataLoader(
-            $clientWrapperMock,
-            $logger,
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $component, $configId),
-        );
-        $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertArrayHasKey('host', $credentials);
-        self::assertArrayHasKey('password', $credentials);
-
-        $dataLoader->cleanWorkspace();
-
-        if ($shouldBeLogged) {
-            self::assertTrue($logsHandler->hasErrorThatContains(
-                'Failed to cleanup workspace: ' . $deleteException->getMessage(),
-            ));
-        } else {
-            self::assertFalse($logsHandler->hasErrorRecords());
-        }
-
-        $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
-    }
-
-    public function testExternallyManagedWorkspaceSuccess(): void
-    {
-        $componentId = 'keboola.runner-workspace-test';
-        $component = new ComponentSpecification([
-            'id' => $componentId,
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
-                    'tag' => '1.6.2',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-
-        $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
-        $workspaceData = $workspaceApi->createWorkspace(['backend' => 'snowflake']);
-        $workspaceGetData = $workspaceApi->getWorkspace($workspaceData['id']);
-
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
-        $clientMock->expects(self::once())
-            ->method('apiGet')
-            ->with(sprintf('workspaces/%s', $workspaceData['id']))
-            ->willReturn($workspaceGetData);
-        $clientMock->expects(self::never())
-            ->method('apiDelete');
-
-        $clientWrapperMock = $this->createMock(ClientWrapper::class);
-        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
-        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
-
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
-
-        $dataLoader = new DataLoader(
-            $clientWrapperMock,
-            $logger,
-            $this->workingDir->getDataDir(),
-            new JobDefinition(
-                [
-                    'runtime' => [
-                        'backend' => [
-                            'workspace_credentials' => [
-                                'id' => $workspaceData['id'],
-                                'type' => $workspaceData['connection']['backend'],
-                                '#password' => $workspaceData['connection']['password'],
-                            ],
-                        ],
-                    ],
-                ],
-                $component,
-            ),
-        );
-
-        $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertSame(
-            [
-                'host' => $workspaceData['connection']['host'],
-                'warehouse' => $workspaceData['connection']['warehouse'],
-                'database' => $workspaceData['connection']['database'],
-                'schema' => $workspaceData['connection']['schema'],
-                'user' => $workspaceData['connection']['user'],
-                'password' => $workspaceData['connection']['password'],
-                'privateKey' => null,
-                'account' => 'keboola',
-            ],
-            $credentials,
-        );
-        // clean workspace should not do anything (apiDelete is not called)
-        $dataLoader->cleanWorkspace();
-
-        $getWorkspaceResult = $workspaceApi->getWorkspace($workspaceData['id']);
-        self::assertSame($workspaceGetData, $getWorkspaceResult);
-    }
-
-    public function dataTypeSupportProvider(): iterable
-    {
-        yield 'default-values' => [
-            true,
-            null,
-            null,
-            DataTypeSupport::NONE,
-        ];
-
-        yield 'component-override' => [
-            true,
-            'hints',
-            null,
-            DataTypeSupport::HINTS,
-        ];
-
-        yield 'config-override' => [
-            true,
-            null,
-            'authoritative',
-            DataTypeSupport::AUTHORITATIVE,
-        ];
-
-        yield 'component-config-override' => [
-            true,
-            'hints',
-            'authoritative',
-            DataTypeSupport::AUTHORITATIVE,
-        ];
-
-        yield 'component-override-without-feature' => [
-            false,
-            'hints',
-            null,
-            DataTypeSupport::NONE,
-        ];
-
-        yield 'config-override-without-feature' => [
-            false,
-            null,
-            'authoritative',
-            DataTypeSupport::NONE,
-        ];
-
-        yield 'component-config-override-without-feature' => [
-            false,
-            'hints',
-            'authoritative',
-            DataTypeSupport::NONE,
-        ];
-    }
 
     public function testTreatValuesAsNull(): void
     {
@@ -1588,15 +1039,13 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'treat_values_as_null' => ['NAN'],
-                    'tables' => [
-                        [
-                            'source' => 'data.csv',
-                            'destination' => 'in.c-docker-demo-testConfig.treated-values-test',
-                        ],
+        $storageConfig = [
+            'output' => [
+                'treat_values_as_null' => ['NAN'],
+                'tables' => [
+                    [
+                        'source' => 'data.csv',
+                        'destination' => 'in.c-docker-demo-testConfig.treated-values-test',
                     ],
                 ],
             ],
@@ -1630,12 +1079,12 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         );
 
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
@@ -1701,15 +1150,13 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $config = [
-            'storage' => [
-                'output' => [
-                    'treat_values_as_null' => [],
-                    'tables' => [
-                        [
-                            'source' => 'data.csv',
-                            'destination' => 'in.c-docker-demo-testConfig.treated-values-test',
-                        ],
+        $storageConfig = [
+            'output' => [
+                'treat_values_as_null' => [],
+                'tables' => [
+                    [
+                        'source' => 'data.csv',
+                        'destination' => 'in.c-docker-demo-testConfig.treated-values-test',
                     ],
                 ],
             ],
@@ -1743,12 +1190,12 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         );
 
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component),
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $storageConfig,
+            component: $component,
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();

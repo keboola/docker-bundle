@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\BackendTests\BigQuery;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
-use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
-use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderBigQueryTest extends BaseDataLoaderTest
@@ -118,14 +113,21 @@ class DataLoaderBigQueryTest extends BaseDataLoaderTest
             ],
         );
 
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition($config, $component, $configId),
+        $stagingWorkspace = $this->getStagingWorkspaceFacade(
+            $this->clientWrapper->getToken(),
+            $component,
+            $config,
+            $configId,
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
-        $credentials = $dataLoader->getWorkspaceCredentials();
+
+        $dataLoader = $this->getInputDataLoader(
+            storageConfig: $config['storage'],
+            component: $component,
+            stagingWorkspaceId: $stagingWorkspace->getWorkspaceId(),
+        );
+        $dataLoader->loadInputData();
+
+        $credentials = $stagingWorkspace->getCredentials();
         self::assertEquals(['schema', 'region', 'credentials'], array_keys($credentials));
         self::assertNotEmpty($credentials['credentials']);
 
