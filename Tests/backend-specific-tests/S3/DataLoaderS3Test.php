@@ -6,18 +6,13 @@ namespace Keboola\DockerBundle\BackendTests\S3;
 
 use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
-use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
-use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use ZipArchive;
 
@@ -99,7 +94,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
 
     public function testLoadInputDataS3(): void
     {
-        $config = [
+        $storageConfig = [
             'input' => [
                 'tables' => [
                     [
@@ -121,13 +116,11 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new CsvFile($filePath),
         );
 
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
+        $dataLoader = $this->getInputDataLoader(
+           storageConfig: $storageConfig,
+           component: $this->getS3StagingComponent(),
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
 
         $manifest = json_decode(
             file_get_contents(

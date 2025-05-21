@@ -4,15 +4,27 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\InputDataLoaderFactory;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\OutputDataLoaderFactory;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFacade;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFactory;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
+use Keboola\JobQueue\JobConfiguration\Mapping\InputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\OutputDataLoader;
+use Keboola\KeyGenerator\PemKeyCertificateGenerator;
+use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
+use Keboola\StagingProvider\Workspace\WorkspaceProvider;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
+use Keboola\StorageApiBranch\StorageApiToken;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -43,7 +55,6 @@ abstract class BaseDataLoaderTest extends TestCase
     protected function cleanup($suffix = ''): void
     {
         $this->dropBucket($this->clientWrapper, 'in.c-docker-demo-testConfig' . $suffix);
-        ;
 
         $files = $this->clientWrapper->getBasicClient()->listFiles(
             (new ListFilesOptions())->setTags(['docker-demo-test' . $suffix]),
@@ -68,22 +79,95 @@ abstract class BaseDataLoaderTest extends TestCase
         }
     }
 
-    protected function getDataLoader(array $storageConfig, $configRow = null): DataLoader
-    {
-        $config = ['storage' => $storageConfig];
-        $jobDefinition = new JobDefinition(
-            $config,
-            $this->getDefaultBucketComponent(),
-            'testConfig',
-            null,
-            [],
-            $configRow,
+    protected function getInputDataLoader(
+        array $storageConfig = [],
+        ?ComponentSpecification $component = null,
+        ?string $stagingWorkspaceId = null,
+        ?ClientWrapper $clientWrapper = null,
+    ): InputDataLoader {
+        $clientWrapper ??= $this->clientWrapper;
+
+        $workspaceProvider = new WorkspaceProvider(
+            new Workspaces($clientWrapper->getBasicClient()),
+            new Components($clientWrapper->getBasicClient()),
+            new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
         );
-        return new DataLoader(
-            $this->clientWrapper,
+
+        $dataLoaderFactory = new InputDataLoaderFactory(
+            $workspaceProvider,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            $jobDefinition,
+        );
+
+        return $dataLoaderFactory->createInputDataLoader(
+            $clientWrapper,
+            $component ?? $this->getDefaultBucketComponent(),
+            Configuration::fromArray([
+                'storage' => $storageConfig,
+            ]),
+            State::fromArray([]),
+            stagingWorkspaceId: $stagingWorkspaceId,
+        );
+    }
+
+    protected function getOutputDataLoader(
+        array $storageConfig = [],
+        ?ComponentSpecification $component = null,
+        ?ClientWrapper $clientWrapper = null,
+        ?string $configId = 'testConfig',
+        ?string $configRowId = null,
+    ): OutputDataLoader {
+        $clientWrapper ??= $this->clientWrapper;
+
+        $workspaceProvider = new WorkspaceProvider(
+            new Workspaces($clientWrapper->getBasicClient()),
+            new Components($clientWrapper->getBasicClient()),
+            new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
+        );
+
+        $dataLoaderFactory = new OutputDataLoaderFactory(
+            $workspaceProvider,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+        );
+
+        return $dataLoaderFactory->createOutputDataLoader(
+            $clientWrapper,
+            $component ?? $this->getDefaultBucketComponent(),
+            Configuration::fromArray([
+                'storage' => $storageConfig,
+            ]),
+            $configId,
+            $configRowId,
+            stagingWorkspaceId: null, // TODO
+        );
+    }
+
+    protected function getStagingWorkspaceFacade(
+        StorageApiToken $storageApiToken,
+        ComponentSpecification $component,
+        ?array $configData = [],
+        ?string $configId = null,
+        ?ClientWrapper $clientWrapper = null,
+    ): StagingWorkspaceFacade {
+        $clientWrapper ??= $this->clientWrapper;
+
+        $workspaceProvider = new WorkspaceProvider(
+            new Workspaces($clientWrapper->getBranchClient()),
+            new Components($clientWrapper->getBranchClient()),
+            new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
+        );
+
+        $stagingWorkspaceFactory = new StagingWorkspaceFactory(
+            $workspaceProvider,
+            new NullLogger(),
+        );
+
+        return $stagingWorkspaceFactory->createStagingWorkspaceFacade(
+            $storageApiToken,
+            $component,
+            Configuration::fromArray($configData),
+            $configId,
         );
     }
 

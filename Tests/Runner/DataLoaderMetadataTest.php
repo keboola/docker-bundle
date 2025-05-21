@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
-use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderMetadataTest extends BaseDataLoaderTest
@@ -45,7 +42,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
             (string) json_encode(['destination' => 'sliced']),
         );
-        $dataLoader = $this->getDataLoader([]);
+        $dataLoader = $this->getOutputDataLoader();
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
 
@@ -60,8 +57,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata = [
-            'system'
-            => [
+            'system' => [
                 'KBC.createdBy.component.id' => 'docker-demo',
                 'KBC.createdBy.configuration.id' => 'testConfig',
                 'KBC.lastUpdatedBy.component.id' => 'docker-demo',
@@ -123,12 +119,10 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
                 (string) $branchId,
             ),
         );
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition([], $this->getDefaultBucketComponent(), 'testConfig'),
+        $dataLoader = $this->getOutputDataLoader(
+            clientWrapper: $clientWrapper,
         );
+
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
 
@@ -169,7 +163,9 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
             (string) json_encode(['destination' => 'sliced']),
         );
-        $dataLoader = $this->getDataLoader([], 'testRow');
+        $dataLoader = $this->getOutputDataLoader(
+            configRowId: 'testRow',
+        );
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
 
@@ -267,7 +263,10 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
                 ],
             ],
         ];
-        $dataLoader = $this->getDataLoader($config);
+        $dataLoader = $this->getOutputDataLoader(
+            storageConfig: $config,
+        );
+
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-runner-test.out');
@@ -337,7 +336,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             }        
         ';
         $fs->dumpFile($this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest', $manifest);
-        $dataLoader = $this->getDataLoader([]);
+        $dataLoader = $this->getOutputDataLoader();
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
 
@@ -419,7 +418,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             ],
         ];
 
-        $dataLoader = $this->getDataLoader($config);
+        $dataLoader = $this->getOutputDataLoader($config);
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
