@@ -13,7 +13,7 @@ use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\InputDataLoaderFactory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\OutputDataLoaderFactory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFacade;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFacadeFactory;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFactory;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Limits;
@@ -246,7 +246,7 @@ class Runner
                 new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
             );
 
-            $stagingWorkspaceFactory = new StagingWorkspaceFacadeFactory(
+            $stagingWorkspaceFactory = new StagingWorkspaceFactory(
                 $workspaceProvider,
                 $this->loggersService->getLog(),
             );
@@ -269,7 +269,7 @@ class Runner
                 $component,
                 $jobConfiguration,
                 $jobState,
-                $this->stagingWorkspace->getWorkspaceId(),
+                $this->stagingWorkspace?->getWorkspaceId(),
             );
 
             // setup output-mapping
@@ -284,7 +284,7 @@ class Runner
                 $jobConfiguration,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId(),
-                $this->stagingWorkspace->getWorkspaceId(),
+                $this->stagingWorkspace?->getWorkspaceId(),
             );
         } else {
             $this->stagingWorkspace = null;
