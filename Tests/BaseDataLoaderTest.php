@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\InputDataLoaderFactory;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\OutputDataLoaderFactory;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFacade;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFactory;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
-use Keboola\JobQueue\JobConfiguration\Mapping\InputDataLoader;
-use Keboola\JobQueue\JobConfiguration\Mapping\OutputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\InputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\InputDataLoaderFactory;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\OutputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\OutputDataLoaderFactory;
+use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFacade;
+use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFactory;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
+use Keboola\StagingProvider\Staging\StagingClass;
+use Keboola\StagingProvider\Staging\StagingType;
 use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
 use Keboola\StagingProvider\Workspace\WorkspaceProvider;
 use Keboola\StorageApi\ClientException;
@@ -146,11 +148,17 @@ abstract class BaseDataLoaderTest extends TestCase
     protected function getStagingWorkspaceFacade(
         StorageApiToken $storageApiToken,
         ComponentSpecification $component,
-        ?array $configData = [],
+        array $configData = [],
         ?string $configId = null,
         ?ClientWrapper $clientWrapper = null,
     ): StagingWorkspaceFacade {
         $clientWrapper ??= $this->clientWrapper;
+
+        // ensure we're dealing with a component with workspace staging
+        self::assertSame(
+            StagingClass::Workspace,
+            StagingType::from($component->getInputStagingStorage())->getStagingClass(),
+        );
 
         $workspaceProvider = new WorkspaceProvider(
             new Workspaces($clientWrapper->getBranchClient()),
@@ -163,12 +171,17 @@ abstract class BaseDataLoaderTest extends TestCase
             new NullLogger(),
         );
 
-        return $stagingWorkspaceFactory->createStagingWorkspaceFacade(
+        $stagingWorkspaceFacade = $stagingWorkspaceFactory->createStagingWorkspaceFacade(
             $storageApiToken,
             $component,
             Configuration::fromArray($configData),
             $configId,
         );
+
+        // factory always returns staging for components with workspace staging
+        assert($stagingWorkspaceFacade !== null);
+
+        return $stagingWorkspaceFacade;
     }
 
     protected function getDefaultBucketComponent(): ComponentSpecification

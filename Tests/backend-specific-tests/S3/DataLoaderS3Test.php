@@ -117,8 +117,8 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         );
 
         $dataLoader = $this->getInputDataLoader(
-           storageConfig: $storageConfig,
-           component: $this->getS3StagingComponent(),
+            storageConfig: $storageConfig,
+            component: $this->getS3StagingComponent(),
         );
         $dataLoader->loadInputData();
 

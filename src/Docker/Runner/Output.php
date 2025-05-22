@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFacade;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\Table\Result as InputTableResult;
+use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFacade;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Table\Result as OutputTableResult;
 
