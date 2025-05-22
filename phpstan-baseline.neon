@@ -86,11 +86,6 @@ parameters:
 			path: Tests/BaseDataLoaderTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseDataLoaderTest\\:\\:getDataLoader\\(\\) has parameter \\$configRow with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseDataLoaderTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -439,11 +434,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ImageTest\\:\\:testQuayIO\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/ImageTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoaderTest\\:\\:testAccessors\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
 
 		-
 			message: "#^Cannot call method waitForAll\\(\\) on Keboola\\\\OutputMapping\\\\DeferredTasks\\\\LoadTableQueue\\|null\\.$#"

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\Artifacts\Result as ArtifactsResult;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\Table\Result as InputMappingTableResult;
+use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFacade;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Table\Result as OutputMappingTableResult;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -69,9 +69,9 @@ class OutputTest extends TestCase
         $output->setInputFileStateList($inputFileStateList);
         self::assertSame($inputFileStateList, $output->getInputFileStateList());
 
-        $dataLoader = $this->createMock(DataLoaderInterface::class);
-        $output->setStagingWorkspace($dataLoader);
-        self::assertSame($dataLoader, $output->getStagingWorkspace());
+        $stagingWorkspace = $this->createMock(StagingWorkspaceFacade::class);
+        $output->setStagingWorkspace($stagingWorkspace);
+        self::assertSame($stagingWorkspace, $output->getStagingWorkspace());
 
         $stateFileMock = $this->createMock(StateFile::class);
         $output->setStateFile($stateFileMock);
