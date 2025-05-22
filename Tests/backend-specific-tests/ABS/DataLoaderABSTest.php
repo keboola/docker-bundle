@@ -5,14 +5,8 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\BackendTests\ABS;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
-use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Psr\Log\NullLogger;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -27,16 +21,14 @@ class DataLoaderABSTest extends BaseDataLoaderTest
 
     public function testLoadInputData()
     {
-        $config = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-docker-demo-testConfig-abs.test',
-                        ],
+        $storageConfig = [
+            'input' => [
+                'tables' => [
+                    [
+                        'source' => 'in.c-docker-demo-testConfig-abs.test',
                     ],
-                    'files' => [['tags' => ['docker-demo-test-abs']]],
                 ],
+                'files' => [['tags' => ['docker-demo-test-abs']]],
             ],
         ];
         $fs = new Filesystem();
@@ -58,14 +50,11 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         );
         sleep(1);
 
-        $jobDefinition = new JobDefinition($config, $this->getNoDefaultBucketComponent());
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            $jobDefinition,
+        $dataLoader = $this->getInputDataLoader(
+            storageConfig: $storageConfig,
+            component: $this->getNoDefaultBucketComponent(),
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
 
         $manifest = json_decode(
             file_get_contents(

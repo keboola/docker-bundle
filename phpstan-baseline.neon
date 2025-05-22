@@ -1236,11 +1236,6 @@ parameters:
 			path: src/Docker/Runner.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\:\\:waitForStorageJobs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner.php
-
-		-
 			message: "#^Parameter \\#1 \\$currentState of method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:stashState\\(\\) expects array\\|stdClass, array\\|object given\\.$#"
 			count: 1
 			path: src/Docker/Runner.php
@@ -1279,11 +1274,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ConfigFile\\:\\:createConfigFile\\(\\) has parameter \\$configData with no type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/ConfigFile.php
-
-		-
-			message: "#^Generator expects value type Keboola\\\\InputMapping\\\\Staging\\\\ProviderInterface, Keboola\\\\InputMapping\\\\Staging\\\\ProviderInterface\\|null given\\.$#"
-			count: 4
-			path: src/Docker/Runner/DataLoader/DataLoader.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Limits\\:\\:getCpuLimit\\(\\) has no return type specified\\.$#"
