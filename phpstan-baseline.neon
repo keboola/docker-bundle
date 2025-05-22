@@ -81,11 +81,6 @@ parameters:
 			path: Tests/BaseContainerTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseDataLoaderTest\\:\\:cleanup\\(\\) has parameter \\$suffix with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseDataLoaderTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -434,11 +429,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ImageTest\\:\\:testQuayIO\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/ImageTest.php
-
-		-
-			message: "#^Cannot call method waitForAll\\(\\) on Keboola\\\\OutputMapping\\\\DeferredTasks\\\\LoadTableQueue\\|null\\.$#"
-			count: 8
-			path: Tests/Runner/DataLoaderMetadataTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ImageCreatorTest\\:\\:testCreateImageDockerHub\\(\\) has no return type specified\\.$#"
@@ -831,26 +821,6 @@ parameters:
 			path: Tests/TestUsageFile.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\ABS\\\\DataLoaderABSTest\\:\\:testLoadInputData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
 			message: "#^Cannot access offset 'id' on mixed\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/ABS/RunnerAbsTest.php
@@ -881,26 +851,6 @@ parameters:
 			path: Tests/backend-specific-tests/ABS/RunnerAbsTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\DataLoaderGCSTest\\:\\:testLoadInputData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
@@ -919,26 +869,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:testWorkspaceSnowflakeMapping\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\S3\\\\DataLoaderS3Test\\:\\:assertS3info\\(\\) has parameter \\$manifest with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\S3\\\\DataLoaderS3Test\\:\\:downloadFile\\(\\) has parameter \\$fileId with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\S3\\\\DataLoaderS3Test\\:\\:downloadFile\\(\\) has parameter \\$targetFile with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Configuration\\:\\:parse\\(\\) has parameter \\$configurations with no type specified\\.$#"
