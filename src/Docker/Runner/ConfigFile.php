@@ -47,7 +47,7 @@ class ConfigFile
     public function createConfigFile(
         $configData,
         OutputFilterInterface $outputFilter,
-        array $workspaceCredentials,
+        ?array $workspaceCredentials,
         array $imageParameters,
     ) {
         // create configuration file injected into docker

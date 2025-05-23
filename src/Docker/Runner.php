@@ -648,7 +648,7 @@ class Runner
             $configFile->createConfigFile(
                 $image->getConfigData(),
                 $outputFilter,
-                $stagingWorkspace?->getCredentials() ?? [],
+                $stagingWorkspace?->getCredentials(),
                 $jobScopedEncryptor->decrypt($image->getSourceComponent()->getImageParameters()),
             );
 
