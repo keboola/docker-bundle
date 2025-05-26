@@ -28,9 +28,7 @@ use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration 
 use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\InputDataLoader;
-use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\InputDataLoaderFactory;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\OutputDataLoader;
-use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\OutputDataLoaderFactory;
 use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFacade;
 use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFactory;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
@@ -236,66 +234,14 @@ class Runner
             $component->getConfigurationFormat(),
         );
 
-        if (($action === 'run') && ($component->getStagingStorage()['input'] !== 'none')) {
-            try {
-                $jobConfiguration = JobConfiguration::fromArray($jobDefinition->getConfiguration());
-                $jobState = State::fromArray($jobDefinition->getState());
-            } catch (InvalidDataException $e) {
-                throw new UserException('Failed to parse job configuration: ' . $e->getMessage(), $e);
-            }
+        [$stagingWorkspace, $inputDataLoader, $outputDataLoader] = $this->prepareDataLoader(
+            $action,
+            $component,
+            $jobDefinition,
+            $workingDirectory,
+        );
 
-            // setup staging workspace
-            $workspaceProvider = new WorkspaceProvider(
-                new Workspaces($this->clientWrapper->getBranchClient()),
-                new Components($this->clientWrapper->getBranchClient()),
-                new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
-            );
-
-            $stagingWorkspaceFactory = new StagingWorkspaceFactory(
-                $workspaceProvider,
-                $this->loggersService->getLog(),
-            );
-
-            $this->stagingWorkspace = $stagingWorkspaceFactory->createStagingWorkspaceFacade(
-                $this->clientWrapper->getToken(),
-                $component,
-                $jobConfiguration,
-                $jobDefinition->getConfigId(),
-            );
-
-            // setup input-mapping
-            $inputDataLoaderFactory = new InputDataLoaderFactory(
-                $workspaceProvider,
-                $this->loggersService->getLog(),
-                $workingDirectory->getDataDir(),
-            );
-            $inputDataLoader = $inputDataLoaderFactory->createInputDataLoader(
-                $this->clientWrapper,
-                $component,
-                $jobConfiguration,
-                $jobState,
-                $this->stagingWorkspace?->getWorkspaceId(),
-            );
-
-            // setup output-mapping
-            $outputDataLoaderFactory = new OutputDataLoaderFactory(
-                $workspaceProvider,
-                $this->loggersService->getLog(),
-                $workingDirectory->getDataDir(),
-            );
-            $outputDataLoader = $outputDataLoaderFactory->createOutputDataLoader(
-                $this->clientWrapper,
-                $component,
-                $jobConfiguration,
-                $jobDefinition->getConfigId(),
-                $jobDefinition->getRowId(),
-                $this->stagingWorkspace?->getWorkspaceId(),
-            );
-        } else {
-            $this->stagingWorkspace = null;
-            $inputDataLoader = null;
-            $outputDataLoader = null;
-        }
+        $this->stagingWorkspace = $stagingWorkspace;
 
         $dataDirUploader = new DataDirUploader(
             $this->clientWrapper->getBranchClient(),
@@ -729,5 +675,74 @@ class Runner
             }
         }
         $stateFile->stashState($newState);
+    }
+
+    /**
+     * @return array{?StagingWorkspaceFacade, ?InputDataLoader, ?OutputDataLoader}
+     */
+    private function prepareDataLoader(
+        string $action,
+        ComponentSpecification $component,
+        JobDefinition $jobDefinition,
+        WorkingDirectory $workingDirectory,
+    ): array {
+        if (($action === 'run') && ($component->getStagingStorage()['input'] !== 'none')) {
+            try {
+                $jobConfiguration = JobConfiguration::fromArray($jobDefinition->getConfiguration());
+                $jobState = State::fromArray($jobDefinition->getState());
+            } catch (InvalidDataException $e) {
+                throw new UserException('Failed to parse job configuration: ' . $e->getMessage(), $e);
+            }
+
+            // setup staging workspace
+            $workspaceProvider = new WorkspaceProvider(
+                new Workspaces($this->clientWrapper->getBranchClient()),
+                new Components($this->clientWrapper->getBranchClient()),
+                new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
+            );
+
+            $stagingWorkspaceFactory = new StagingWorkspaceFactory(
+                $workspaceProvider,
+                $this->loggersService->getLog(),
+            );
+
+            $stagingWorkspace = $stagingWorkspaceFactory->createStagingWorkspaceFacade(
+                $this->clientWrapper->getToken(),
+                $component,
+                $jobConfiguration,
+                $jobDefinition->getConfigId(),
+            );
+
+            // setup input-mapping
+            $inputDataLoader = InputDataLoader::create(
+                $this->loggersService->getLog(),
+                $this->clientWrapper,
+                $component,
+                $jobConfiguration,
+                $jobState,
+                $stagingWorkspace?->getWorkspaceId(),
+                $workingDirectory->getDataDir(),
+                'in/',
+            );
+
+            // setup output-mapping
+            $outputDataLoader = OutputDataLoader::create(
+                $this->loggersService->getLog(),
+                $this->clientWrapper,
+                $component,
+                $jobConfiguration,
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId(),
+                $stagingWorkspace?->getWorkspaceId(),
+                $workingDirectory->getDataDir(),
+                'out/',
+            );
+        } else {
+            $stagingWorkspace = null;
+            $inputDataLoader = null;
+            $outputDataLoader = null;
+        }
+
+        return [$stagingWorkspace, $inputDataLoader, $outputDataLoader];
     }
 }
