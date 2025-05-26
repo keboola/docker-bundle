@@ -18,6 +18,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\Branch;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\StorageApiToken;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -172,6 +173,13 @@ abstract class BaseRunnerTest extends TestCase
             new Branch((string) $defaultBranchId, 'default branch', true, null),
         );
         $clientWrapper->method('getBranchId')->willReturn((string) $defaultBranchId);
+        $clientWrapper->method('getToken')->willReturnCallback(
+            fn() => new StorageApiToken(
+                $basicClient->verifyToken(),
+                $basicClient->getTokenString(),
+            ),
+        );
+
         return new Runner(
             $this->encryptor,
             $clientWrapper,
