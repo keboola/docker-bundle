@@ -633,7 +633,7 @@ class Runner
             if ($mode === self::MODE_DEBUG) {
                 $dataDirUploader->uploadDataDir(
                     $jobId,
-                    $component->getId(),
+                    $image->getSourceComponent()->getId(),
                     $rowId,
                     $workingDirectory->getDataDir(),
                     'stage_' . $priority,
