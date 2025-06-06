@@ -32,9 +32,6 @@
             <directory>Tests/Docker/Container</directory>
             <file>Tests/Docker/Container/ProcessTest.php</file>
         </testsuite>
-        <testsuite name="s3-tests">
-            <directory>Tests/backend-specific-tests/S3</directory>
-        </testsuite>
         <testsuite name="abs-tests">
             <directory>Tests/backend-specific-tests/ABS</directory>
         </testsuite>

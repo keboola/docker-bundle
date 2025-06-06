@@ -10,9 +10,6 @@ use Keboola\Artifacts\Tags;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Limits;
@@ -25,13 +22,24 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\Exception\InvalidDataException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration as JobConfiguration;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\InputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataLoader\OutputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFacade;
+use Keboola\JobQueue\JobConfiguration\Mapping\StagingWorkspace\StagingWorkspaceFactory;
+use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
+use Keboola\StagingProvider\Workspace\WorkspaceProvider;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 use Throwable;
@@ -50,7 +58,7 @@ class Runner
     private int $maxLogPort;
     private array $instanceLimits;
     private OutputFilterInterface $outputFilter;
-    private ?DataLoaderInterface $currentlyUsedDataLoader = null;
+    private ?StagingWorkspaceFacade $stagingWorkspace = null;
 
     public function __construct(
         ObjectEncryptor $encryptor,
@@ -171,7 +179,7 @@ class Runner
     {
         /* This method is expected to be called from pcntl signal termination handler, which means that runs with
             the main thread paused and expecting it not to be resumed. */
-        $this->currentlyUsedDataLoader?->cleanWorkspace();
+        $this->stagingWorkspace?->cleanup();
     }
 
     private function runRow(
@@ -226,16 +234,14 @@ class Runner
             $component->getConfigurationFormat(),
         );
 
-        if (($action === 'run') && ($component->getStagingStorage()['input'] !== 'none')) {
-            $dataLoader = new DataLoader(
-                $this->clientWrapper,
-                $this->loggersService->getLog(),
-                $workingDirectory->getDataDir(),
-                $jobDefinition,
-            );
-        } else {
-            $dataLoader = new NullDataLoader();
-        }
+        [$stagingWorkspace, $inputDataLoader, $outputDataLoader] = $this->prepareDataLoader(
+            $action,
+            $component,
+            $jobDefinition,
+            $workingDirectory,
+        );
+
+        $this->stagingWorkspace = $stagingWorkspace;
 
         $dataDirUploader = new DataDirUploader(
             $this->clientWrapper->getBranchClient(),
@@ -269,27 +275,7 @@ class Runner
             $configData,
         );
 
-        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES])) {
-            $inputTableStateList = new InputTableStateList(
-                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES],
-            );
-        } else {
-            $inputTableStateList = new InputTableStateList([]);
-        }
-        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES])) {
-            $inputFileStateList = new InputFileStateList(
-                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES],
-            );
-        } else {
-            $inputFileStateList = new InputFileStateList([]);
-        }
-
         try {
-            $this->currentlyUsedDataLoader = $dataLoader;
             $this->runComponent(
                 $jobId,
                 $jobDefinition->getConfigId(),
@@ -297,7 +283,9 @@ class Runner
                 $jobDefinition->getRowId(),
                 $component,
                 $usageFile,
-                $dataLoader,
+                $this->stagingWorkspace,
+                $inputDataLoader,
+                $outputDataLoader,
                 $dataDirUploader,
                 $workingDirectory,
                 $stateFile,
@@ -305,8 +293,6 @@ class Runner
                 $configFile,
                 $this->outputFilter,
                 $mode,
-                $inputTableStateList,
-                $inputFileStateList,
                 $currentOutput,
                 $artifacts,
                 $backendSize,
@@ -315,24 +301,15 @@ class Runner
                 $jobScopedEncryptor,
             );
         } catch (Throwable $e) {
-            $dataLoader->cleanWorkspace();
+            $this->stagingWorkspace?->cleanup();
             throw $e;
         } finally {
-            $this->currentlyUsedDataLoader = null;
+            $this->stagingWorkspace = null;
         }
     }
 
     /**
      * @param JobDefinition[] $jobDefinitions
-     * @param string $action
-     * @param string $mode
-     * @param string $jobId
-     * @param UsageFileInterface $usageFile
-     * @param array $rowIds
-     * @param Output[] $outputs
-     * @param string|null $backendSize
-     * @throws ClientException
-     * @throws UserException
      */
     public function run(
         array $jobDefinitions,
@@ -411,7 +388,7 @@ class Runner
         }
     }
 
-    private function waitForStorageJobs(array $outputs)
+    private function waitForStorageJobs(array $outputs): void
     {
         /** @var Output[] $outputsWithTableQueue */
         $outputsWithTableQueue = [];
@@ -436,7 +413,7 @@ class Runner
             }
         } finally {
             foreach ($outputs as $output) {
-                $output->getDataLoader()->cleanWorkspace();
+                $output->getStagingWorkspace()?->cleanup();
             }
             $this->loggersService->getLog()->info('Output mapping done.');
         }
@@ -449,7 +426,9 @@ class Runner
         ?string $rowId,
         ComponentSpecification $component,
         UsageFileInterface $usageFile,
-        DataLoaderInterface $dataLoader,
+        ?StagingWorkspaceFacade $stagingWorkspace,
+        ?InputDataLoader $inputDataLoader,
+        ?OutputDataLoader $outputDataLoader,
         DataDirUploader $dataDirUploader,
         WorkingDirectory $workingDirectory,
         StateFile $stateFile,
@@ -457,8 +436,6 @@ class Runner
         ConfigFile $configFile,
         OutputFilterInterface $outputFilter,
         string $mode,
-        InputTableStateList $inputTableStateList,
-        InputFileStateList $inputFileStateList,
         Output $output,
         Artifacts $artifacts,
         ?string $backendSize,
@@ -468,7 +445,7 @@ class Runner
     ): Output {
         // initialize
         $workingDirectory->createWorkingDir();
-        $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
+        $inputMappingResult = $inputDataLoader?->loadInputData();
 
         try {
             $this->runImages(
@@ -483,7 +460,8 @@ class Runner
                 $configFile,
                 $stateFile,
                 $outputFilter,
-                $dataLoader,
+                $inputDataLoader,
+                $stagingWorkspace,
                 $dataDirUploader,
                 $mode,
                 $output,
@@ -494,7 +472,7 @@ class Runner
                 $jobScopedEncryptor,
             );
 
-            $output->setDataLoader($dataLoader);
+            $output->setStagingWorkspace($stagingWorkspace);
 
             if ($mode === self::MODE_DEBUG) {
                 $dataDirUploader->uploadDataDir(
@@ -505,7 +483,7 @@ class Runner
                     'stage_output',
                 );
             } else {
-                $tableQueue = $dataLoader->storeOutput();
+                $tableQueue = $outputDataLoader?->storeOutput();
                 $output->setTableQueue($tableQueue);
             }
 
@@ -515,9 +493,9 @@ class Runner
         } catch (Throwable $exception) {
             if ($mode !== self::MODE_DEBUG) {
                 try {
-                    $tableQueue = $dataLoader->storeOutput(true);
+                    $tableQueue = $outputDataLoader?->storeOutput(true);
                     $output->setTableQueue($tableQueue);
-                    $output->setDataLoader($dataLoader);
+                    $output->setStagingWorkspace($stagingWorkspace);
                     $this->waitForStorageJobs([$output]);
                 } catch (Throwable) {
                     throw $exception;
@@ -525,8 +503,10 @@ class Runner
             }
             throw $exception;
         } finally {
-            $output->setInputTableResult($storageState->getInputTableResult());
-            $output->setInputFileStateList($storageState->getInputFileStateList());
+            if ($inputMappingResult !== null) {
+                $output->setInputTableResult($inputMappingResult->inputTableResult);
+                $output->setInputFileStateList($inputMappingResult->inputFileStateList);
+            }
         }
     }
 
@@ -542,7 +522,8 @@ class Runner
         ConfigFile $configFile,
         StateFile $stateFile,
         OutputFilterInterface $outputFilter,
-        DataLoaderInterface $dataLoader,
+        ?InputDataLoader $inputDataLoader,
+        ?StagingWorkspaceFacade $stagingWorkspace,
         DataDirUploader $dataDirUploader,
         string $mode,
         Output $output,
@@ -586,7 +567,7 @@ class Runner
                 }
             } else {
                 $this->loggersService->getLog()->info('Running processor ' . $image->getSourceComponent()->getId());
-                if ($dataLoader instanceof NullDataLoader) {
+                if ($inputDataLoader === null) {
                     // there is nothing reasonable a processor can do because there's no data
                     continue;
                 }
@@ -613,7 +594,7 @@ class Runner
             $configFile->createConfigFile(
                 $image->getConfigData(),
                 $outputFilter,
-                $dataLoader->getWorkspaceCredentials(),
+                $stagingWorkspace?->getCredentials(),
                 $jobScopedEncryptor->decrypt($image->getSourceComponent()->getImageParameters()),
             );
 
@@ -652,7 +633,7 @@ class Runner
             if ($mode === self::MODE_DEBUG) {
                 $dataDirUploader->uploadDataDir(
                     $jobId,
-                    $component->getId(),
+                    $image->getSourceComponent()->getId(),
                     $rowId,
                     $workingDirectory->getDataDir(),
                     'stage_' . $priority,
@@ -694,5 +675,74 @@ class Runner
             }
         }
         $stateFile->stashState($newState);
+    }
+
+    /**
+     * @return array{?StagingWorkspaceFacade, ?InputDataLoader, ?OutputDataLoader}
+     */
+    private function prepareDataLoader(
+        string $action,
+        ComponentSpecification $component,
+        JobDefinition $jobDefinition,
+        WorkingDirectory $workingDirectory,
+    ): array {
+        if (($action === 'run') && ($component->getStagingStorage()['input'] !== 'none')) {
+            try {
+                $jobConfiguration = JobConfiguration::fromArray($jobDefinition->getConfiguration());
+                $jobState = State::fromArray($jobDefinition->getState());
+            } catch (InvalidDataException $e) {
+                throw new UserException('Failed to parse job configuration: ' . $e->getMessage(), $e);
+            }
+
+            // setup staging workspace
+            $workspaceProvider = new WorkspaceProvider(
+                new Workspaces($this->clientWrapper->getBranchClient()),
+                new Components($this->clientWrapper->getBranchClient()),
+                new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
+            );
+
+            $stagingWorkspaceFactory = new StagingWorkspaceFactory(
+                $workspaceProvider,
+                $this->loggersService->getLog(),
+            );
+
+            $stagingWorkspace = $stagingWorkspaceFactory->createStagingWorkspaceFacade(
+                $this->clientWrapper->getToken(),
+                $component,
+                $jobConfiguration,
+                $jobDefinition->getConfigId(),
+            );
+
+            // setup input-mapping
+            $inputDataLoader = InputDataLoader::create(
+                $this->loggersService->getLog(),
+                $this->clientWrapper,
+                $component,
+                $jobConfiguration,
+                $jobState,
+                $stagingWorkspace?->getWorkspaceId(),
+                $workingDirectory->getDataDir(),
+                'in/',
+            );
+
+            // setup output-mapping
+            $outputDataLoader = OutputDataLoader::create(
+                $this->loggersService->getLog(),
+                $this->clientWrapper,
+                $component,
+                $jobConfiguration,
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId(),
+                $stagingWorkspace?->getWorkspaceId(),
+                $workingDirectory->getDataDir(),
+                'out/',
+            );
+        } else {
+            $stagingWorkspace = null;
+            $inputDataLoader = null;
+            $outputDataLoader = null;
+        }
+
+        return [$stagingWorkspace, $inputDataLoader, $outputDataLoader];
     }
 }
