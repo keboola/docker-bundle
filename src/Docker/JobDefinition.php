@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
@@ -17,7 +18,8 @@ class JobDefinition
      */
     public function __construct(
         array $configuration,
-        private readonly Component $component,
+        private readonly ComponentSpecification $component,
+        /** @var null|non-empty-string */
         private readonly ?string $configId = null,
         private readonly ?string $configVersion = null,
         private readonly array $state = [],
@@ -35,6 +37,9 @@ class JobDefinition
         return $this->component->getId();
     }
 
+    /**
+     * @return non-empty-string|null
+     */
     public function getConfigId(): ?string
     {
         return $this->configId;
@@ -50,7 +55,7 @@ class JobDefinition
         return $this->configVersion;
     }
 
-    public function getComponent(): Component
+    public function getComponent(): ComponentSpecification
     {
         return $this->component;
     }

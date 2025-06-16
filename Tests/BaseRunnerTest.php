@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -18,6 +18,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\Branch;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\StorageApiToken;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -172,6 +173,13 @@ abstract class BaseRunnerTest extends TestCase
             new Branch((string) $defaultBranchId, 'default branch', true, null),
         );
         $clientWrapper->method('getBranchId')->willReturn((string) $defaultBranchId);
+        $clientWrapper->method('getToken')->willReturnCallback(
+            fn() => new StorageApiToken(
+                $basicClient->verifyToken(),
+                $basicClient->getTokenString(),
+            ),
+        );
+
         return new Runner(
             $this->encryptor,
             $clientWrapper,
@@ -183,15 +191,22 @@ abstract class BaseRunnerTest extends TestCase
     }
 
     /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
+     * @param null|non-empty-string $configId
      * @return JobDefinition[]
      */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
-    {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
+    protected function prepareJobDefinitions(
+        array $componentData,
+        ?string $configId,
+        array $configData,
+        array $state,
+    ): array {
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new ComponentSpecification($componentData),
+            $configId,
+            'v123',
+            $state,
+        );
         return [$jobDefinition];
     }
 }

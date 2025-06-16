@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\BranchAwareClient;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -54,7 +54,7 @@ class ImageCreatorTest extends TestCase
 
     public function testCreateImageDockerHub()
     {
-        $image = new Component([
+        $image = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',
@@ -80,7 +80,7 @@ class ImageCreatorTest extends TestCase
 
     public function testCreateImageQuay()
     {
-        $image = new Component([
+        $image = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
@@ -105,7 +105,7 @@ class ImageCreatorTest extends TestCase
 
     public function testCreateImageProcessors()
     {
-        $image = new Component([
+        $image = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',

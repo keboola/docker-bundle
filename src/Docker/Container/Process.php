@@ -47,6 +47,6 @@ class Process extends SymfonyProcess
 
     private function filter(string $value): string
     {
-        return $this->outputFilter->filter($value);
+        return $this->outputFilter->redactSecrets($value);
     }
 }

@@ -6,9 +6,9 @@ namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Configuration\Authorization\AuthorizationDefinition;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\ExternallyManagedWorkspaceCredentials;
 use Keboola\InputMapping\Configuration\File as InputFile;
 use Keboola\InputMapping\Configuration\Table as InputTable;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Runtime\WorkspaceCredentials\Type;
 use Keboola\OutputMapping\Configuration\File as OutputFile;
 use Keboola\OutputMapping\Configuration\Table as OutputTable;
 use Keboola\OutputMapping\Configuration\TableFile as OutputTableFile;
@@ -56,7 +56,7 @@ class Container extends Configuration
                                         ->end()
                                         ->enumNode('type')
                                             ->isRequired()
-                                            ->values(ExternallyManagedWorkspaceCredentials::VALID_TYPES)
+                                            ->values(array_map(fn(Type $v) => $v->value, Type::cases()))
                                         ->end()
                                         ->scalarNode('#password')->end()
                                         ->scalarNode('#privateKey')->end()

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker\Image;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Psr\Log\NullLogger;
 use Symfony\Component\Process\Process;
 
@@ -21,7 +21,7 @@ class QuayIORepositoryTest extends BaseImageTest
         $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-bundle-ci | wc -l');
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'quayio',

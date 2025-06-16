@@ -13,6 +13,7 @@ use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\Logging\GelfLoggingConfiguration;
 use Monolog\Logger;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -160,8 +161,10 @@ class Container
         $startTime = time();
         try {
             $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
-            if ($this->getImage()->getSourceComponent()->getLoggerType() === 'gelf') {
-                $process = $this->runWithLogger($this->id);
+            $loggerConfig = $this->getImage()->getSourceComponent()->getLoggingConfiguration();
+
+            if ($loggerConfig instanceof GelfLoggingConfiguration) {
+                $process = $this->runWithLogger($this->id, $loggerConfig);
             } else {
                 $process = Process::fromShellCommandline($this->getRunCommand($this->id));
                 $process->setOutputFilter($this->outputFilter);
@@ -203,9 +206,9 @@ class Container
         });
     }
 
-    private function runWithLogger($containerName)
+    private function runWithLogger($containerName, GelfLoggingConfiguration $loggerConfig)
     {
-        $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
+        $server = ServerFactory::createServer($loggerConfig->type);
         $containerId = '';
         $process = null;
         $server->start(
@@ -258,7 +261,7 @@ class Container
                     return;
                 }
                 array_walk_recursive($event, function (&$value) {
-                    $value = $this->outputFilter->filter((string) $value);
+                    $value = $this->outputFilter->redactSecrets((string) $value);
                 });
                 $this->containerLogger->addRawRecord(
                     (int) $event['level'],

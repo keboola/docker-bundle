@@ -81,86 +81,6 @@ parameters:
 			path: Tests/BaseContainerTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseDataLoaderTest\\:\\:cleanup\\(\\) has parameter \\$suffix with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseDataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseDataLoaderTest\\:\\:getDataLoader\\(\\) has parameter \\$configRow with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseDataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseRunnerTest\\:\\:prepareJobDefinitions\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseRunnerTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testConfigurationDefaults\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testFlagsOff\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testFlagsOn\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameNoDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameTwoDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testHasNoSwap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testHasSwap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentEmptyDefinition\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentEmptyUri\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentNoDefinition\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testSetTag\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -509,16 +429,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ImageTest\\:\\:testQuayIO\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/ImageTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoaderTest\\:\\:testAccessors\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
-
-		-
-			message: "#^Cannot call method waitForAll\\(\\) on Keboola\\\\OutputMapping\\\\DeferredTasks\\\\LoadTableQueue\\|null\\.$#"
-			count: 8
-			path: Tests/Runner/DataLoaderMetadataTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ImageCreatorTest\\:\\:testCreateImageDockerHub\\(\\) has no return type specified\\.$#"
@@ -911,46 +821,6 @@ parameters:
 			path: Tests/TestUsageFile.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\ABS\\\\DataLoaderABSTest\\:\\:testLoadInputData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderABSTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\ABS\\\\DataLoaderPersistentABSWorkspaceTest\\:\\:testAbsWorkspaceConfigMultipleWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderPersistentABSWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\ABS\\\\DataLoaderPersistentABSWorkspaceTest\\:\\:testAbsWorkspaceConfigNoWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderPersistentABSWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\ABS\\\\DataLoaderPersistentABSWorkspaceTest\\:\\:testAbsWorkspaceConfigOneWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderPersistentABSWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\ABS\\\\DataLoaderPersistentABSWorkspaceTest\\:\\:testAbsWorkspaceNoConfig\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/ABS/DataLoaderPersistentABSWorkspaceTest.php
-
-		-
 			message: "#^Cannot access offset 'id' on mixed\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/ABS/RunnerAbsTest.php
@@ -981,46 +851,6 @@ parameters:
 			path: Tests/backend-specific-tests/ABS/RunnerAbsTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Exasol\\\\RunnerExasolTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Exasol/RunnerExasolTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Exasol\\\\RunnerExasolTest\\:\\:clearConfigs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Exasol/RunnerExasolTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Exasol\\\\RunnerExasolTest\\:\\:createBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Exasol/RunnerExasolTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Exasol\\\\RunnerExasolTest\\:\\:testWorkspaceExasolMapping\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Exasol/RunnerExasolTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\DataLoaderGCSTest\\:\\:testLoadInputData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/DataLoaderGCSTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
@@ -1036,119 +866,9 @@ parameters:
 			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:prepareJobDefinitions\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:testWorkspaceSnowflakeMapping\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Redshift\\\\DataLoaderPersistentRedshiftWorkspaceTest\\:\\:testRedshiftWorkspaceConfigMultipleWorkspaceVariant2\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Redshift/DataLoaderPersistentRedshiftWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Redshift\\\\DataLoaderPersistentRedshiftWorkspaceTest\\:\\:testRedshiftWorkspaceConfigNoWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Redshift/DataLoaderPersistentRedshiftWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Redshift\\\\DataLoaderPersistentRedshiftWorkspaceTest\\:\\:testRedshiftWorkspaceConfigOneWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Redshift/DataLoaderPersistentRedshiftWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Redshift\\\\DataLoaderPersistentRedshiftWorkspaceTest\\:\\:testRedshiftWorkspaceNoConfig\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Redshift/DataLoaderPersistentRedshiftWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\S3\\\\DataLoaderS3Test\\:\\:assertS3info\\(\\) has parameter \\$manifest with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\S3\\\\DataLoaderS3Test\\:\\:downloadFile\\(\\) has parameter \\$fileId with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\S3\\\\DataLoaderS3Test\\:\\:downloadFile\\(\\) has parameter \\$targetFile with no type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:clearConfigs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:clearFiles\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:createBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:testAbsWorkspaceMapping\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:testAbsWorkspaceMappingCombined\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:testAbsWorkspaceMappingOutput\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Synapse\\\\RunnerSynapseTest\\:\\:testWorkspaceSynapseMapping\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Synapse/RunnerSynapseTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Teradata\\\\RunnerTeradataTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Teradata/RunnerTeradataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Teradata\\\\RunnerTeradataTest\\:\\:clearConfigs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Teradata/RunnerTeradataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Teradata\\\\RunnerTeradataTest\\:\\:createBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Teradata/RunnerTeradataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Teradata\\\\RunnerTeradataTest\\:\\:testWorkspaceTeradataMapping\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/Teradata/RunnerTeradataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Component\\:\\:getSanitizedComponentId\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Docker/Component.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Configuration\\:\\:parse\\(\\) has parameter \\$configurations with no type specified\\.$#"
@@ -1436,11 +1156,6 @@ parameters:
 			path: src/Docker/Runner.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\:\\:waitForStorageJobs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner.php
-
-		-
 			message: "#^Parameter \\#1 \\$currentState of method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:stashState\\(\\) expects array\\|stdClass, array\\|object given\\.$#"
 			count: 1
 			path: src/Docker/Runner.php
@@ -1479,46 +1194,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ConfigFile\\:\\:createConfigFile\\(\\) has parameter \\$configData with no type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/ConfigFile.php
-
-		-
-			message: "#^Generator expects value type Keboola\\\\InputMapping\\\\Staging\\\\ProviderInterface, Keboola\\\\InputMapping\\\\Staging\\\\ProviderInterface\\|null given\\.$#"
-			count: 4
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
-			message: "#^Parameter \\#1 \\$text of method Keboola\\\\DockerBundle\\\\Docker\\\\OutputFilter\\\\OutputFilterInterface\\:\\:filter\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$clientWrapper\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$dataDirectory\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$jobDefinition\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$logger\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$outputFilter\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:__construct\\(\\) has parameter \\$dataDirectory with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Limits\\:\\:getCpuLimit\\(\\) has no return type specified\\.$#"

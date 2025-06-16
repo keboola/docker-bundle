@@ -48,14 +48,14 @@ class Limits
         $this->logger->notice(
             sprintf(
                 "Memory limits - component: '%s' project: %s",
-                $image->getSourceComponent()->getMemory(),
+                $image->getSourceComponent()->getMemoryLimit(),
                 var_export($projectLimit, true),
             ),
         );
         if ($projectLimit) {
             return $projectLimit;
         }
-        return $image->getSourceComponent()->getMemory();
+        return $image->getSourceComponent()->getMemoryLimit();
     }
 
     public function getMemorySwapLimit(Image $image)
@@ -64,7 +64,7 @@ class Limits
         if ($projectLimit) {
             return $projectLimit;
         }
-        return $image->getSourceComponent()->getMemory();
+        return $image->getSourceComponent()->getMemoryLimit();
     }
 
     public function getNetworkLimit(Image $image)
@@ -185,7 +185,7 @@ class Limits
     {
         if (!in_array(self::PAY_AS_YOU_GO_FEATURE, $this->projectFeatures)) {
             $multiplier = $this->getNodeTypeMultiplier($this->containerType);
-            $componentMemory = UnitConverter::connectionMemoryLimitToBytes($image->getSourceComponent()->getMemory());
+            $componentMemory = $image->getSourceComponent()->getMemoryLimitBytes();
 
             $memoryLimit = (int) round($multiplier * $componentMemory);
 

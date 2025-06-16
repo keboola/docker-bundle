@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
@@ -12,6 +11,7 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
 use Keboola\Temp\Temp;
@@ -125,7 +125,7 @@ abstract class BaseContainerTest extends TestCase
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
         $image = ImageFactory::getImage(
             $log,
-            new Component($imageConfig),
+            new ComponentSpecification($imageConfig),
             true,
         );
         if ($prepare) {
