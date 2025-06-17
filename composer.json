@@ -17,7 +17,7 @@
         "keboola/common-exceptions": "^1.0",
         "keboola/gelf-server": "^4.0",
         "keboola/input-mapping": "^21.0",
-        "keboola/job-queue-job-configuration": "^2.0",
+        "keboola/job-queue-job-configuration": "^2.1",
         "keboola/oauth-v2-php-client": "^4.0",
         "keboola/object-encryptor": "^2.2",
         "keboola/output-mapping": "^27.0",
