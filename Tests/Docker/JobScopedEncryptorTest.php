@@ -125,6 +125,7 @@ class JobScopedEncryptorTest extends TestCase
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
                 'projectFeatures' => ['protected-default-branch'],
             ],
+
             'expectedArguments' => [
                 'componentId' => 'my-component',
                 'projectId' => 'my-project',
@@ -165,6 +166,72 @@ class JobScopedEncryptorTest extends TestCase
             ],
             'methodCalled' => 'decryptForBranchTypeConfiguration',
             'method' => 'decrypt',
+        yield 'encrypt without configuration with storage-branches' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => null,
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'projectFeatures' => ['storage-branches'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'encryptForBranchType',
+            'method' => 'encrypt',
+        ];
+        yield 'decrypt without configuration with storage-branches' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => null,
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'projectFeatures' => ['storage-branches'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'decryptForBranchType',
+            'method' => 'decrypt',
+        ];
+        yield 'encrypt with configuration with storage-branches' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'projectFeatures' => ['storage-branches'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'encryptForBranchType',
+            'method' => 'encrypt',
+        ];
+        yield 'decrypt with configuration with storage-branches' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'projectFeatures' => ['storage-branches'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'decryptForBranchTypeConfiguration',
+            'method' => 'decrypt',
+        ];
+
         ];
     }
 }

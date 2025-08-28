@@ -269,6 +269,17 @@ class StateFileTest extends TestCase
             'branchType' => 'dev',
             'expectedPrefix' => 'KBC::BranchTypeSecure::',
         ];
+        yield 'default branch with storage-branches feature' => [
+            'features' => ['storage-branches'],
+            'branchType' => 'default',
+            'expectedPrefix' => 'KBC::BranchTypeSecure::',
+        ];
+        yield 'non-default branch with storage-branches feature' => [
+            'features' => ['storage-branches'],
+            'branchType' => 'dev',
+            'expectedPrefix' => 'KBC::BranchTypeSecure::',
+        ];
+
     }
 
     public function testStashStateDoesNotUpdate(): void
