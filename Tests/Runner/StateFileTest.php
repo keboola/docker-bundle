@@ -279,7 +279,6 @@ class StateFileTest extends TestCase
             'branchType' => 'dev',
             'expectedPrefix' => 'KBC::BranchTypeSecure::',
         ];
-
     }
 
     public function testStashStateDoesNotUpdate(): void

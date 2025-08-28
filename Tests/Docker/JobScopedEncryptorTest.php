@@ -166,6 +166,7 @@ class JobScopedEncryptorTest extends TestCase
             ],
             'methodCalled' => 'decryptForBranchTypeConfiguration',
             'method' => 'decrypt',
+        ];
         yield 'encrypt without configuration with storage-branches' => [
             'arguments' => [
                 'componentId' => 'my-component',
@@ -230,8 +231,6 @@ class JobScopedEncryptorTest extends TestCase
             ],
             'methodCalled' => 'decryptForBranchTypeConfiguration',
             'method' => 'decrypt',
-        ];
-
         ];
     }
 }
