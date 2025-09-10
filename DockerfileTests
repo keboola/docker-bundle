@@ -2,7 +2,7 @@ ARG APP_USER_NAME=app
 ARG APP_USER_UID=1000
 ARG APP_USER_GID=1000
 
-FROM php:8.2-cli
+FROM php:8.2-cli-bookworm
 ENV DEBIAN_FRONTEND noninteractive
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_FLAGS="--prefer-dist --no-interaction"
