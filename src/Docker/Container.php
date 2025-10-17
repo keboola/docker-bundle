@@ -192,6 +192,9 @@ class Container
 
         $message = $errorOutput;
         if (!$message) {
+            $this->logger->notice(
+                'The component has failed without producing any error output. Falling back to output.',
+            );
             $message = $output;
         }
         if (!$message) {
