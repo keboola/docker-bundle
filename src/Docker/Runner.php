@@ -89,7 +89,7 @@ class Runner
         $this->outputFilter = $outputFilter;
     }
 
-    private function getCommandToGetHostIp()
+    private function getCommandToGetHostIp(): string
     {
         if (getenv('RUNNER_COMMAND_TO_GET_HOST_IP')) {
             return getenv('RUNNER_COMMAND_TO_GET_HOST_IP');
@@ -165,7 +165,7 @@ class Runner
             try {
                 $components->getConfiguration($componentId, $configurationId);
             } catch (ClientException $e) {
-                if ($e->getStringCode() === 'notFound' && $e->getPrevious()->getCode() === 404) {
+                if ($e->getStringCode() === 'storage.configuration.notFound' && $e->getPrevious()->getCode() === 404) {
                     $storeState = false;
                 } else {
                     throw $e;

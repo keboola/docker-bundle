@@ -21,134 +21,33 @@ use Symfony\Component\Process\Process as SymfonyProcess;
 
 class Container
 {
-    /**
-     * Container ID
-     *
-     * @var string
-     */
-    protected $id;
+    private int $dockerCliTimeout = 120;
+    private string $lastError = '';
 
-    /**
-     * @var Image
-     */
-    protected $image;
-
-    /**
-     * @var string
-     */
-    protected $dataDir;
-
-    /**
-     * @var string
-     */
-    protected $tmpDir;
-
-    /**
-     * @var Logger
-     */
-    private $logger;
-
-    /**
-     * @var int Docker CLI process timeout
-     */
-    protected $dockerCliTimeout = 120;
-
-    /**
-     * @var ContainerLogger
-     */
-    private $containerLogger;
-
-    /**
-     * @var string
-     */
-    private $commandToGetHostIp;
-
-    /**
-     * @var RunCommandOptions
-     */
-    private $runCommandOptions;
-
-    /**
-     * @var int
-     */
-    private $minLogPort;
-
-    /**
-     * @var int
-     */
-    private $maxLogPort;
-
-    /**
-     * @var OutputFilterInterface
-     */
-    private $outputFilter;
-
-    /**
-     * @var Limits
-     */
-    private $limits;
-
-    /**
-     * @var string
-     */
-    private $lastError;
-
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
+    public function __construct(
+        private readonly string $containerId,
+        private readonly Image $image,
+        private readonly Logger $logger,
+        private readonly ContainerLogger $containerLogger,
+        private readonly string $dataDir,
+        private readonly string $tmpDir,
+        private readonly string $commandToGetHostIp,
+        private readonly int $minLogPort,
+        private readonly int $maxLogPort,
+        private readonly RunCommandOptions $runCommandOptions,
+        private readonly OutputFilterInterface $outputFilter,
+        private readonly Limits $limits,
+    ) {
     }
 
-    /**
-     * @return Image
-     */
-    public function getImage()
+    public function getId(): string
+    {
+        return $this->containerId;
+    }
+
+    public function getImage(): Image
     {
         return $this->image;
-    }
-
-    /**
-     * @param $containerId
-     * @param Image $image
-     * @param Logger $logger
-     * @param ContainerLogger $containerLogger
-     * @param string $dataDirectory
-     * @param string $tmpDirectory
-     * @param string $commandToGetHostIp
-     * @param int $minLogPort
-     * @param $maxLogPort
-     * @param RunCommandOptions $runCommandOptions
-     * @param OutputFilterInterface $outputFilter
-     * @param Limits $limits
-     */
-    public function __construct(
-        $containerId,
-        Image $image,
-        Logger $logger,
-        ContainerLogger $containerLogger,
-        $dataDirectory,
-        $tmpDirectory,
-        $commandToGetHostIp,
-        $minLogPort,
-        $maxLogPort,
-        RunCommandOptions $runCommandOptions,
-        OutputFilterInterface $outputFilter,
-        Limits $limits,
-    ) {
-        $this->logger = $logger;
-        $this->containerLogger = $containerLogger;
-        $this->image = $image;
-        $this->dataDir = $dataDirectory;
-        $this->tmpDir = $tmpDirectory;
-        $this->id = $containerId;
-        $this->commandToGetHostIp = $commandToGetHostIp;
-        $this->minLogPort = $minLogPort;
-        $this->maxLogPort = $maxLogPort;
-        $this->runCommandOptions = $runCommandOptions;
-        $this->outputFilter = $outputFilter;
-        $this->limits = $limits;
     }
 
     /**
@@ -164,16 +63,16 @@ class Container
             $loggerConfig = $this->getImage()->getSourceComponent()->getLoggingConfiguration();
 
             if ($loggerConfig instanceof GelfLoggingConfiguration) {
-                $process = $this->runWithLogger($this->id, $loggerConfig);
+                $process = $this->runWithLogger($this->containerId, $loggerConfig);
             } else {
-                $process = Process::fromShellCommandline($this->getRunCommand($this->id));
+                $process = Process::fromShellCommandline($this->getRunCommand($this->containerId));
                 $process->setOutputFilter($this->outputFilter);
                 $process->setTimeout(null);
                 $this->runWithoutLogger($process);
             }
             $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
 
-            $this->checkOOM($this->inspectContainer($this->id));
+            $this->checkOOM($this->inspectContainer($this->containerId));
             if (!$process->isSuccessful()) {
                 $this->handleContainerFailure($process, $startTime);
             } else {
@@ -183,12 +82,12 @@ class Container
             }
         } finally {
             try {
-                $this->removeContainer($this->id);
+                $this->removeContainer($this->containerId);
             } catch (ProcessFailedException|ProcessTimedOutException $e) {
                 $this->logger->notice(sprintf(
                     'Cannot remove container %s %s: %s',
                     $this->getImage()->getFullImageId(),
-                    $this->id,
+                    $this->containerId,
                     $e->getMessage(),
                 ));
                 // continue
@@ -226,7 +125,7 @@ class Container
                         ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port],
                     ),
                 );
-                $process = Process::fromShellCommandline($this->getRunCommand($this->id));
+                $process = Process::fromShellCommandline($this->getRunCommand($this->containerId));
                 $process->setOutputFilter($this->outputFilter);
                 $process->setTimeout(null);
                 $process->start();
@@ -293,6 +192,9 @@ class Container
 
         $message = $errorOutput;
         if (!$message) {
+            $this->logger->notice(
+                'The component has failed without producing any error output. Falling back to output.',
+            );
             $message = $output;
         }
         if (!$message) {
