@@ -89,7 +89,7 @@ class Runner
         $this->outputFilter = $outputFilter;
     }
 
-    private function getCommandToGetHostIp()
+    private function getCommandToGetHostIp(): string
     {
         if (getenv('RUNNER_COMMAND_TO_GET_HOST_IP')) {
             return getenv('RUNNER_COMMAND_TO_GET_HOST_IP');

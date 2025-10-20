@@ -71,16 +71,6 @@ parameters:
 			path: Tests/BaseContainerTest.php
 
 		-
-			message: "#^Parameter \\#7 \\$commandToGetHostIp of class Keboola\\\\DockerBundle\\\\Docker\\\\Container constructor expects string, string\\|false given\\.$#"
-			count: 1
-			path: Tests/BaseContainerTest.php
-
-		-
-			message: "#^Parameter \\#8 \\$minLogPort of class Keboola\\\\DockerBundle\\\\Docker\\\\Container constructor expects int, string\\|false given\\.$#"
-			count: 1
-			path: Tests/BaseContainerTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -946,16 +936,6 @@ parameters:
 			path: src/Docker/Container.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Container\\:\\:__construct\\(\\) has parameter \\$containerId with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Container.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Container\\:\\:__construct\\(\\) has parameter \\$maxLogPort with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Container.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Container\\:\\:checkOOM\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Container.php
@@ -1142,11 +1122,6 @@ parameters:
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\:\\:createContainerFromImage\\(\\) has parameter \\$containerId with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\:\\:getCommandToGetHostIp\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner.php
 
