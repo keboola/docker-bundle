@@ -1795,7 +1795,7 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $this->expectException(ClientException::class);
-        self:$this->expectExceptionMessage('Configuration runner-configuration not found');
+        self:$this->expectExceptionMessage('Configuration "runner-configuration" not found');
         $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
     }
 
@@ -1841,7 +1841,7 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $this->expectException(ClientException::class);
-        self:$this->expectExceptionMessage('Configuration runner-configuration not found');
+        self:$this->expectExceptionMessage('Configuration "runner-configuration" not found');
         $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
     }
 

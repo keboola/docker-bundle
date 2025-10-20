@@ -165,7 +165,7 @@ class Runner
             try {
                 $components->getConfiguration($componentId, $configurationId);
             } catch (ClientException $e) {
-                if ($e->getStringCode() === 'notFound' && $e->getPrevious()->getCode() === 404) {
+                if ($e->getStringCode() === 'storage.configuration.notFound' && $e->getPrevious()->getCode() === 404) {
                     $storeState = false;
                 } else {
                     throw $e;
