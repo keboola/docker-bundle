@@ -256,8 +256,8 @@ class BranchedWorkspaceTest extends BaseRunnerTest
     private function createMasterClient()
     {
         return new Client([
-            'url' => getenv('STORAGE_API_URL'),
-            'token' => getenv('STORAGE_API_TOKEN_MASTER'),
+            'url' => (string) getenv('STORAGE_API_URL'),
+            'token' => (string) getenv('STORAGE_API_TOKEN_MASTER'),
         ]);
     }
 

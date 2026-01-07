@@ -160,8 +160,8 @@ class ArtifactsTest extends BaseRunnerTest
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
         $this->client = new Client([
-            'url' => getenv('STORAGE_API_URL'),
-            'token' => getenv('STORAGE_API_TOKEN'),
+            'url' => (string) getenv('STORAGE_API_URL'),
+            'token' => (string) getenv('STORAGE_API_TOKEN'),
         ]);
         /** @var StorageApiClient&MockObject $storageApiMock */
         $storageApiMock = $this->getStorageClientMockUpload();

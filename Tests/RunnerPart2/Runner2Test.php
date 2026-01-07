@@ -25,8 +25,8 @@ class Runner2Test extends BaseRunnerTest
         $client = new StorageApiClient(
             'default',
             [
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
+                'url' => (string) getenv('STORAGE_API_URL'),
+                'token' => (string) getenv('STORAGE_API_TOKEN'),
             ],
         );
         $transformationTestComponentId = 'keboola.python-transformation';

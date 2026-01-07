@@ -123,8 +123,8 @@ class NetworkPolicyTest extends BaseRunnerTest
         $this->client = new BranchAwareClient(
             'default',
             [
-                'url' => self::getOptionalEnv('STORAGE_API_URL'),
-                'token' => self::getOptionalEnv('STORAGE_API_TOKEN_NETWORK_POLICY'),
+                'url' => self::getRequiredEnv('STORAGE_API_URL'),
+                'token' => self::getRequiredEnv('STORAGE_API_TOKEN_NETWORK_POLICY'),
             ],
         );
     }

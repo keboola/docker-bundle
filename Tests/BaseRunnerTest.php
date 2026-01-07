@@ -49,8 +49,8 @@ abstract class BaseRunnerTest extends TestCase
         $this->client = new BranchAwareClient(
             'default',
             [
-                'url' => self::getOptionalEnv('STORAGE_API_URL'),
-                'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
+                'url' => self::getRequiredEnv('STORAGE_API_URL'),
+                'token' => self::getRequiredEnv('STORAGE_API_TOKEN'),
             ],
         );
     }
@@ -151,8 +151,8 @@ abstract class BaseRunnerTest extends TestCase
         $defaultBranchId = null;
         $basicClient = new Client(
             [
-                'url' => self::getOptionalEnv('STORAGE_API_URL'),
-                'token' => $token ?? self::getOptionalEnv('STORAGE_API_TOKEN'),
+                'url' => self::getRequiredEnv('STORAGE_API_URL'),
+                'token' => $token ?? self::getRequiredEnv('STORAGE_API_TOKEN'),
             ],
         );
         $devBranches = new DevBranches($basicClient);
