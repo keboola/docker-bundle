@@ -18,7 +18,7 @@
         "keboola/gelf-server": "^4.0",
         "keboola/input-mapping": "^22.0",
         "keboola/job-queue-job-configuration": "^3",
-        "keboola/oauth-v2-php-client": "^4.0",
+        "keboola/oauth-v2-php-client": "^5.0",
         "keboola/object-encryptor": "^2.2",
         "keboola/output-mapping": "^27.0",
         "keboola/php-temp": "^2.0",
