@@ -255,10 +255,10 @@ class BranchedWorkspaceTest extends BaseRunnerTest
      */
     private function createMasterClient()
     {
-                return new Client([
-                    'url' => (string) getenv('STORAGE_API_URL'),
-                    'token' => (string) getenv('STORAGE_API_TOKEN_MASTER'),
-                ]);
+        return new Client([
+            'url' => (string) getenv('STORAGE_API_URL'),
+            'token' => (string) getenv('STORAGE_API_TOKEN_MASTER'),
+        ]);
     }
 
     private function loadDataFromTable(Client $storageApi, $bucketId, $tableName)

@@ -22,13 +22,13 @@ class Runner2Test extends BaseRunnerTest
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
-                $client = new StorageApiClient(
-                    'default',
-                    [
-                        'url' => (string) getenv('STORAGE_API_URL'),
-                        'token' => (string) getenv('STORAGE_API_TOKEN'),
-                    ],
-                );
+        $client = new StorageApiClient(
+            'default',
+            [
+                'url' => (string) getenv('STORAGE_API_URL'),
+                'token' => (string) getenv('STORAGE_API_TOKEN'),
+            ],
+        );
         $transformationTestComponentId = 'keboola.python-transformation';
         $components = new Components($client);
         $configurations = $components->listComponentConfigurations(
