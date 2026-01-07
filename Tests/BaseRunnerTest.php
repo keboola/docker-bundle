@@ -46,13 +46,13 @@ abstract class BaseRunnerTest extends TestCase
 
     protected function initStorageClient(): void
     {
-        $this->client = new BranchAwareClient(
-            'default',
-            [
-                'url' => self::getOptionalEnv('STORAGE_API_URL'),
-                'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
-            ],
-        );
+                $this->client = new BranchAwareClient(
+                    'default',
+                    [
+                        'url' => self::getRequiredEnv('STORAGE_API_URL'),
+                        'token' => self::getRequiredEnv('STORAGE_API_TOKEN'),
+                    ],
+                );
     }
 
     protected function setUp(): void
@@ -149,12 +149,12 @@ abstract class BaseRunnerTest extends TestCase
         }
 
         $defaultBranchId = null;
-        $basicClient = new Client(
-            [
-                'url' => self::getOptionalEnv('STORAGE_API_URL'),
-                'token' => $token ?? self::getOptionalEnv('STORAGE_API_TOKEN'),
-            ],
-        );
+                $basicClient = new Client(
+                    [
+                        'url' => self::getRequiredEnv('STORAGE_API_URL'),
+                        'token' => $token ?? self::getRequiredEnv('STORAGE_API_TOKEN'),
+                    ],
+                );
         $devBranches = new DevBranches($basicClient);
         foreach ($devBranches->listBranches() as $branch) {
             if ($branch['isDefault']) {
