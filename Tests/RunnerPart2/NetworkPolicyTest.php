@@ -118,14 +118,14 @@ class NetworkPolicyTest extends BaseRunnerTest
         $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'snowflake');
     }
 
-        protected function initStorageClient(): void
-        {
-            $this->client = new BranchAwareClient(
-                'default',
-                [
-                    'url' => self::getRequiredEnv('STORAGE_API_URL'),
-                    'token' => self::getRequiredEnv('STORAGE_API_TOKEN_NETWORK_POLICY'),
-                ],
-            );
-        }
+    protected function initStorageClient(): void
+    {
+        $this->client = new BranchAwareClient(
+            'default',
+            [
+                'url' => self::getRequiredEnv('STORAGE_API_URL'),
+                'token' => self::getRequiredEnv('STORAGE_API_TOKEN_NETWORK_POLICY'),
+            ],
+        );
+    }
 }
