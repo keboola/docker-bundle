@@ -21,7 +21,7 @@ class GoogleArtifactRegistry extends Image
         ComponentSpecification $component,
         LoggerInterface $logger,
         string $garRegistryUrl,
-        string $ecrRegistryUrl
+        string $ecrRegistryUrl,
     ) {
         parent::__construct($component, $logger);
         $this->garRegistryUrl = $garRegistryUrl;
