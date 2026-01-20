@@ -21,6 +21,10 @@ abstract class ImageFactory
         ComponentSpecification $component,
         $isMain,
     ) {
+        $useGarRegistry = getenv('USE_GAR_REGISTRY') === 'true';
+        $garRegistryUrl = getenv('GAR_REGISTRY_URL');
+        $ecrRegistryUrl = getenv('ECR_REGISTRY_URL');
+
         switch ($component->getType()) {
             case 'dockerhub':
                 $instance = new Image\DockerHub($component, $logger);
@@ -29,7 +33,16 @@ abstract class ImageFactory
                 $instance = new Image\QuayIO($component, $logger);
                 break;
             case 'aws-ecr':
-                $instance = new Image\AWSElasticContainerRegistry($component, $logger);
+                if ($useGarRegistry && !empty($garRegistryUrl) && !empty($ecrRegistryUrl)) {
+                    $instance = new Image\GoogleArtifactRegistry(
+                        $component,
+                        $logger,
+                        $garRegistryUrl,
+                        $ecrRegistryUrl,
+                    );
+                } else {
+                    $instance = new Image\AWSElasticContainerRegistry($component, $logger);
+                }
                 break;
             default:
                 throw new ApplicationException('Unknown image type: ' . $component->getType());
