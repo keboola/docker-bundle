@@ -46,7 +46,7 @@ class GoogleArtifactRegistry extends Image
     public function getLoginParams(): string
     {
         $credentialsPath = getenv('GOOGLE_APPLICATION_CREDENTIALS');
-        if (empty($credentialsPath) || !file_exists($credentialsPath)) {
+        if ($credentialsPath === false || $credentialsPath === '' || !file_exists($credentialsPath)) {
             throw new LoginFailedException(
                 'GOOGLE_APPLICATION_CREDENTIALS environment variable is not set or file does not exist',
             );

@@ -22,8 +22,8 @@ abstract class ImageFactory
         $isMain,
     ) {
         $useGarRegistry = getenv('USE_GAR_REGISTRY') === 'true';
-        $garRegistryUrl = getenv('GAR_REGISTRY_URL');
-        $ecrRegistryUrl = getenv('ECR_REGISTRY_URL');
+        $garRegistryUrl = getenv('GAR_REGISTRY_URL') ?: '';
+        $ecrRegistryUrl = getenv('ECR_REGISTRY_URL') ?: '';
 
         switch ($component->getType()) {
             case 'dockerhub':
@@ -33,7 +33,7 @@ abstract class ImageFactory
                 $instance = new Image\QuayIO($component, $logger);
                 break;
             case 'aws-ecr':
-                if ($useGarRegistry && !empty($garRegistryUrl) && !empty($ecrRegistryUrl)) {
+                if ($useGarRegistry && $garRegistryUrl !== '' && $ecrRegistryUrl !== '') {
                     $instance = new Image\GoogleArtifactRegistry(
                         $component,
                         $logger,
