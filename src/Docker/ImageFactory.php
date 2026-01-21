@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 abstract class ImageFactory
 {
     public const KNOWN_IMAGE_TYPES = ['dockerhub', 'quayio', 'aws-ecr'];
+    private const ECR_REGISTRY_URL = '147946154733.dkr.ecr.us-east-1.amazonaws.com';
 
     /**
      * @param bool $isMain True to mark the image as main image.
@@ -23,7 +24,6 @@ abstract class ImageFactory
     ) {
         $useGarRegistry = getenv('USE_GAR_REGISTRY') === 'true';
         $garRegistryUrl = getenv('GAR_REGISTRY_URL') ?: '';
-        $ecrRegistryUrl = getenv('ECR_REGISTRY_URL') ?: '';
 
         switch ($component->getType()) {
             case 'dockerhub':
@@ -33,12 +33,12 @@ abstract class ImageFactory
                 $instance = new Image\QuayIO($component, $logger);
                 break;
             case 'aws-ecr':
-                if ($useGarRegistry && $garRegistryUrl !== '' && $ecrRegistryUrl !== '') {
+                if ($useGarRegistry && $garRegistryUrl !== '') {
                     $instance = new Image\GoogleArtifactRegistry(
                         $component,
                         $logger,
                         $garRegistryUrl,
-                        $ecrRegistryUrl,
+                        self::ECR_REGISTRY_URL,
                     );
                 } else {
                     $instance = new Image\AWSElasticContainerRegistry($component, $logger);
