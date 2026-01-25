@@ -12,71 +12,87 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Throwable;
 
-class GoogleArtifactRegistry extends Image
+class ReplicatedRegistry extends Image
 {
-    private string $garRegistryUrl;
-    private string $ecrRegistryUrl;
+    private string $replicatedRegistryUrl;
+    private string $sourceRegistryUrl;
 
     public function __construct(
         ComponentSpecification $component,
         LoggerInterface $logger,
-        string $garRegistryUrl,
-        string $ecrRegistryUrl,
+        string $replicatedRegistryUrl,
+        string $sourceRegistryUrl,
     ) {
         parent::__construct($component, $logger);
-        $this->garRegistryUrl = $garRegistryUrl;
-        $this->ecrRegistryUrl = $ecrRegistryUrl;
+        $this->replicatedRegistryUrl = $replicatedRegistryUrl;
+        $this->sourceRegistryUrl = $sourceRegistryUrl;
     }
 
     /**
-     * Get the transformed image ID with GAR registry URL instead of ECR
+     * Check if replicated registry is enabled via environment variables
+     */
+    public static function isEnabled(): bool
+    {
+        $useReplicatedRegistry = getenv('USE_REPLICATED_REGISTRY');
+        $replicatedRegistryUrl = getenv('REPLICATED_REGISTRY_URL');
+
+        return $useReplicatedRegistry === 'true'
+            && $replicatedRegistryUrl !== false
+            && $replicatedRegistryUrl !== '';
+    }
+
+    /**
+     * Get the transformed image ID with replicated registry URL instead of source registry
      */
     public function getImageId(): string
     {
         $originalImageId = parent::getImageId();
-        if (!empty($this->ecrRegistryUrl) && !empty($this->garRegistryUrl)) {
-            return str_replace($this->ecrRegistryUrl, $this->garRegistryUrl, $originalImageId);
+        if (!empty($this->sourceRegistryUrl) && !empty($this->replicatedRegistryUrl)) {
+            return str_replace($this->sourceRegistryUrl, $this->replicatedRegistryUrl, $originalImageId);
         }
         return $originalImageId;
     }
 
     /**
-     * Get login parameters for GAR using service account JSON key
+     * Get login parameters for the replicated registry
      */
     public function getLoginParams(): string
     {
-        $credentialsPath = getenv('GAR_PULL_GOOGLE_APPLICATION_CREDENTIALS');
-        if ($credentialsPath === false || $credentialsPath === '' || !file_exists($credentialsPath)) {
+        $login = getenv('REPLICATED_REGISTRY_LOGIN');
+        $password = getenv('REPLICATED_REGISTRY_PASSWORD');
+
+        if ($login === false || $login === '') {
             throw new LoginFailedException(
-                'GAR_PULL_GOOGLE_APPLICATION_CREDENTIALS environment variable is not set or file does not exist',
+                'REPLICATED_REGISTRY_LOGIN environment variable is not set',
             );
         }
 
-        $keyContent = file_get_contents($credentialsPath);
-        if ($keyContent === false) {
-            throw new LoginFailedException('Failed to read GCP service account key file');
+        if ($password === false || $password === '') {
+            throw new LoginFailedException(
+                'REPLICATED_REGISTRY_PASSWORD environment variable is not set',
+            );
         }
 
         $registryHost = $this->getRegistryHost();
 
         $loginParams = [];
-        $loginParams[] = '--username=' . escapeshellarg('_json_key');
-        $loginParams[] = '--password=' . escapeshellarg($keyContent);
+        $loginParams[] = '--username=' . escapeshellarg($login);
+        $loginParams[] = '--password=' . escapeshellarg($password);
         $loginParams[] = escapeshellarg($registryHost);
         return implode(' ', $loginParams);
     }
 
     /**
-     * Get the registry host from the GAR URL
+     * Get the registry host from the replicated registry URL
      */
     private function getRegistryHost(): string
     {
-        $parts = explode('/', $this->garRegistryUrl);
+        $parts = explode('/', $this->replicatedRegistryUrl);
         return $parts[0];
     }
 
     /**
-     * Get logout parameters for GAR
+     * Get logout parameters for the replicated registry
      */
     public function getLogoutParams(): string
     {
