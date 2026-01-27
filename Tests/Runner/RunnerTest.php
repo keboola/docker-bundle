@@ -7,6 +7,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\CommonExceptions\ApplicationExceptionInterface;
 use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
@@ -139,7 +140,15 @@ class RunnerTest extends BaseRunnerTest
             $this->loggersServiceStub,
             new OutputFilter(10000),
             ['cpu_count' => 2],
-            new ImageFactory($this->loggersServiceStub->getLog()),
+            new ImageFactory(
+                $this->loggersServiceStub->getLog(),
+                new ReplicatedRegistry(
+                    false,
+                    'dummy-registry-url',
+                    'dummy-user',
+                    'dummy-pass',
+                ),
+            ),
             (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT'),
         );
 

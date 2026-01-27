@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
@@ -14,12 +15,22 @@ use Psr\Log\NullLogger;
 class ImageCreatorTest extends TestCase
 {
     protected BranchAwareClient $client;
-    private ImageFactory $imageFactory;
+    private readonly ImageFactory $imageFactory;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->imageFactory = new ImageFactory(new NullLogger());
+
+        $this->imageFactory = new ImageFactory(
+            new NullLogger(),
+            new ReplicatedRegistry(
+                false,
+                'dummy-registry-url',
+                'dummy-user',
+                'dummy-pass',
+            ),
+        );
+
         $components = [
             [
                 'id' => 'keboola.processor-decompress',

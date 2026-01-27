@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Psr\Log\LoggerInterface;
@@ -11,10 +12,10 @@ use Psr\Log\LoggerInterface;
 class ImageFactory
 {
     public const KNOWN_IMAGE_TYPES = ['dockerhub', 'quayio', 'aws-ecr'];
-    private const ECR_REGISTRY_URL = '147946154733.dkr.ecr.us-east-1.amazonaws.com';
 
     public function __construct(
         private readonly LoggerInterface $logger,
+        private readonly ReplicatedRegistry $replicatedRegistry,
     ) {
     }
 
@@ -33,13 +34,11 @@ class ImageFactory
                 $instance = new Image\QuayIO($component, $this->logger);
                 break;
             case 'aws-ecr':
-                if (Image\ReplicatedRegistry::isEnabled()) {
-                    $replicatedRegistryUrl = getenv('REPLICATED_REGISTRY_URL');
-                    $instance = new Image\ReplicatedRegistry(
+                if ($this->replicatedRegistry->isEnabled()) {
+                    $instance = new Image\ReplicatedRegistryImage(
                         $component,
                         $this->logger,
-                        $replicatedRegistryUrl !== false ? $replicatedRegistryUrl : '',
-                        self::ECR_REGISTRY_URL,
+                        $this->replicatedRegistry,
                     );
                 } else {
                     $instance = new Image\AWSElasticContainerRegistry($component, $this->logger);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\ObjectEncryptor\EncryptorOptions;
@@ -43,7 +44,13 @@ abstract class BaseImageTest extends TestCase
         $this->logsHandler = new TestHandler();
         $this->logger = new Logger('test', [$this->logsHandler]);
 
-        $this->imageFactory = new ImageFactory($this->logger);
+        $replicatedRegistry = new ReplicatedRegistry(
+            false,
+            'dummy-registry-url',
+            'dummy-user',
+            'dummy-pass',
+        );
+        $this->imageFactory = new ImageFactory($this->logger, $replicatedRegistry);
     }
 
     protected function getEncryptor(): ObjectEncryptor
