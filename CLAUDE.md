@@ -8,6 +8,18 @@ This is `keboola/dockerbundle` - a PHP library that orchestrates execution of Do
 
 ## Commands
 
+**IMPORTANT:** All commands (composer, phpunit, phpcs, phpstan, etc.) should be run inside the Docker development container:
+
+```bash
+docker compose run --rm dev <command>
+```
+
+For example:
+```bash
+docker compose run --rm dev composer phpstan
+docker compose run --rm dev vendor/bin/phpunit
+```
+
 ### Running Tests
 
 ```bash
