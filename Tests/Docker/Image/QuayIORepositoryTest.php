@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker\Image;
 
-use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
-use Psr\Log\NullLogger;
 use Symfony\Component\Process\Process;
 
 class QuayIORepositoryTest extends BaseImageTest
@@ -29,7 +27,7 @@ class QuayIORepositoryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
 
         self::assertEquals('quay.io/keboola/docker-bundle-ci:latest', $image->getFullImageId());

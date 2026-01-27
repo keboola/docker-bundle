@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
@@ -186,6 +187,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->loggersServiceStub,
             new OutputFilter(10000),
             ['cpu_count' => 2],
+            new ImageFactory($this->loggersServiceStub->getLog()),
             (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT'),
         );
     }

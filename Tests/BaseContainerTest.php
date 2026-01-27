@@ -123,8 +123,8 @@ abstract class BaseContainerTest extends TestCase
         $log = new Logger('runner-tests', [$this->testHandler]);
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
-        $image = ImageFactory::getImage(
-            $log,
+        $imageFactory = new ImageFactory($log);
+        $image = $imageFactory->getImage(
             new ComponentSpecification($imageConfig),
             true,
         );

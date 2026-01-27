@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
@@ -233,6 +234,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $this->getLoggersService(),
             new OutputFilter(10000),
             ['cpu_count' => 2],
+            new ImageFactory($this->getLoggersService()->getLog()),
             (int) getenv('RUNNER_MIN_LOG_PORT'),
         );
 

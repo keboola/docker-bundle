@@ -6,12 +6,8 @@ namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Image\QuayIO;
-use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use Psr\Log\NullLogger;
 use Symfony\Component\Process\Process;
 
 class ImageTest extends BaseImageTest
@@ -30,7 +26,7 @@ class ImageTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage(new NullLogger(), $configuration, true);
+        $image = $this->imageFactory->getImage($configuration, true);
         self::assertEquals(DockerHub::class, get_class($image));
         self::assertEquals('master', $image->getTag());
         self::assertEquals('keboola/docker-demo:master', $image->getFullImageId());
@@ -47,7 +43,7 @@ class ImageTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage(new NullLogger(), $configuration, true);
+        $image = $this->imageFactory->getImage($configuration, true);
         self::assertEquals(QuayIO::class, get_class($image));
         self::assertEquals('quay.io/keboola/docker-bundle-ci:latest', $image->getFullImageId());
         self::assertEquals('keboola/docker-bundle-ci:latest', $image->getPrintableImageId());
@@ -68,12 +64,9 @@ class ImageTest extends BaseImageTest
             ],
         ]);
 
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
-
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
-        self::assertTrue($logsHandler->hasNoticeThatContains(
+        self::assertTrue($this->logsHandler->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
@@ -81,7 +74,6 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestPulled()
     {
-
         $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
@@ -92,15 +84,15 @@ class ImageTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
 
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
+        // Reset logs from first prepare
+        $this->logsHandler->clear();
 
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
-        self::assertFalse($logsHandler->hasNoticeThatContains(
+        self::assertFalse($this->logsHandler->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
@@ -118,7 +110,7 @@ class ImageTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
         preg_match('#@sha256:(.*)$#', $image->getImageDigests()[0], $matches);
         self::assertCount(2, $matches);
@@ -133,12 +125,12 @@ class ImageTest extends BaseImageTest
             ],
         ]);
 
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
+        // Reset logs from first prepare
+        $this->logsHandler->clear();
 
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
-        self::assertTrue($logsHandler->hasNoticeThatContains(
+        self::assertTrue($this->logsHandler->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
@@ -189,8 +181,7 @@ class ImageTest extends BaseImageTest
         bool $isMain,
         int $expectedTimeout,
     ): void {
-        $image = ImageFactory::getImage(
-            new Logger('test'),
+        $image = $this->imageFactory->getImage(
             new ComponentSpecification([
                 'data' => [
                     'process_timeout' => $componentTimeout,

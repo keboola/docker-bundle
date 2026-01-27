@@ -11,7 +11,6 @@ use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecifica
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Psr\Log\LoggerInterface;
 
 class ImageCreator
 {
@@ -19,10 +18,10 @@ class ImageCreator
     private array $after;
 
     public function __construct(
-        private readonly LoggerInterface $logger,
         private readonly BranchAwareClient $storageClient,
         private readonly ComponentSpecification $mainComponent,
         private readonly array $componentConfig,
+        private readonly ImageFactory $imageFactory,
     ) {
         $this->before = $componentConfig['processors']['before'] ?? [];
         $this->after = $componentConfig['processors']['after'] ?? [];
@@ -37,7 +36,7 @@ class ImageCreator
             $images[] = $this->prepareImageForProcessor($processor);
         }
 
-        $image = ImageFactory::getImage($this->logger, $this->mainComponent, true);
+        $image = $this->imageFactory->getImage($this->mainComponent, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
@@ -68,7 +67,7 @@ class ImageCreator
             $component->setImageTag($processorData['definition']['tag']);
         }
 
-        $image = ImageFactory::getImage($this->logger, $component, false);
+        $image = $this->imageFactory->getImage($component, false);
         $image->prepare(['parameters' => empty($processorData['parameters']) ? [] : $processorData['parameters']]);
 
         return $image;

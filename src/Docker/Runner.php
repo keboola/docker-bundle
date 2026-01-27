@@ -58,6 +58,7 @@ class Runner
     private int $maxLogPort;
     private array $instanceLimits;
     private OutputFilterInterface $outputFilter;
+    private ImageFactory $imageFactory;
     private ?StagingWorkspaceFacade $stagingWorkspace = null;
 
     public function __construct(
@@ -66,6 +67,7 @@ class Runner
         LoggersService $loggersService,
         OutputFilterInterface $outputFilter,
         array $instanceLimits,
+        ImageFactory $imageFactory,
         int $minLogPort = 12202,
         int $maxLogPort = 13202,
     ) {
@@ -83,6 +85,7 @@ class Runner
         ]);
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
+        $this->imageFactory = $imageFactory;
         $this->commandToGetHostIp = $this->getCommandToGetHostIp();
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
@@ -269,10 +272,10 @@ class Runner
         );
 
         $imageCreator = new ImageCreator(
-            $this->loggersService->getLog(),
             $this->clientWrapper->getBranchClient(),
             $component,
             $configData,
+            $this->imageFactory,
         );
 
         try {

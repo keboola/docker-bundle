@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\BranchAwareClient;
@@ -13,10 +14,12 @@ use Psr\Log\NullLogger;
 class ImageCreatorTest extends TestCase
 {
     protected BranchAwareClient $client;
+    private ImageFactory $imageFactory;
 
     public function setUp(): void
     {
         parent::setUp();
+        $this->imageFactory = new ImageFactory(new NullLogger());
         $components = [
             [
                 'id' => 'keboola.processor-decompress',
@@ -71,7 +74,7 @@ class ImageCreatorTest extends TestCase
             ],
         ];
 
-        $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
+        $imageCreator = new ImageCreator($this->client, $image, $config, $this->imageFactory);
         $images = $imageCreator->prepareImages();
         self::assertCount(1, $images);
         self::assertTrue($images[0]->isMain());
@@ -96,7 +99,7 @@ class ImageCreatorTest extends TestCase
             ],
         ];
 
-        $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
+        $imageCreator = new ImageCreator($this->client, $image, $config, $this->imageFactory);
         $images = $imageCreator->prepareImages();
         self::assertCount(1, $images);
         self::assertTrue($images[0]->isMain());
@@ -142,7 +145,7 @@ class ImageCreatorTest extends TestCase
             ],
         ];
 
-        $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
+        $imageCreator = new ImageCreator($this->client, $image, $config, $this->imageFactory);
         $images = $imageCreator->prepareImages();
         self::assertCount(3, $images);
         self::assertStringEndsWith('keboola.processor-decompress:v4.3.0', $images[0]->getFullImageId());

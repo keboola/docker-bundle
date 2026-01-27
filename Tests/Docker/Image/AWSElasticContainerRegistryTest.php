@@ -5,22 +5,17 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
-use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\DockerBundle\Tests\Docker\ImageTest;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use Psr\Log\NullLogger;
 use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistryTest extends BaseImageTest
 {
-
-    public function testMissingCredentials()
+    public function testMissingCredentials(): void
     {
         putenv('AWS_ACCESS_KEY_ID=');
         putenv('AWS_SECRET_ACCESS_KEY=');
@@ -35,13 +30,13 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->setRetryLimits(100, 100, 1);
         $this->expectException(LoginFailedException::class);
         $image->prepare([]);
     }
 
-    public function testInvalidCredentials()
+    public function testInvalidCredentials(): void
     {
         putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID') . '_invalid');
         putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
@@ -57,17 +52,14 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
 
-        $logsHandler = new TestHandler();
-        $logger = new Logger('test', [$logsHandler]);
-
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->setRetryLimits(100, 100, 1);
         try {
             $image->prepare([]);
             self::fail('Must raise an exception');
         } catch (LoginFailedException $e) {
             self::assertStringContainsString('Error executing "GetAuthorizationToken"', $e->getMessage());
-            self::assertTrue($logsHandler->hasNoticeThatContains('Retrying AWS GetCredentials'));
+            self::assertTrue($this->logsHandler->hasNoticeThatContains('Retrying AWS GetCredentials'));
         }
     }
 
@@ -86,7 +78,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->setRetryLimits(100, 100, 1);
         $this->expectException(UserException::class);
         $this->expectExceptionMessage(
@@ -117,7 +109,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
         self::assertEquals(getenv('AWS_ECR_REGISTRY_URI') . ':latest', $image->getFullImageId());
         $repoParts = explode('/', getenv('AWS_ECR_REGISTRY_URI'));
@@ -146,7 +138,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
         /** @var AWSElasticContainerRegistry $image */
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         self::assertEquals(getenv('AWS_ECR_REGISTRY_ACCOUNT_ID'), $image->getAwsAccountId());
     }
 
@@ -164,7 +156,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
         /** @var AWSElasticContainerRegistry $image */
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $this->expectExceptionMessage('Invalid image ID format: "invalid".');
         $this->expectException(ApplicationException::class);
         $image->getAwsAccountId();
@@ -184,16 +176,15 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $testHandler = new TestHandler();
-        $logger = new Logger('null', [$testHandler]);
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+
+        $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
 
         self::assertEquals(getenv('AWS_ECR_REGISTRY_URI') . ':test-hash', $image->getFullImageId());
         $repoParts = explode('/', getenv('AWS_ECR_REGISTRY_URI'));
         array_shift($repoParts);
         self::assertEquals(implode('/', $repoParts) . ':test-hash', $image->getPrintableImageId());
-        self::assertTrue($testHandler->hasNotice(
+        self::assertTrue($this->logsHandler->hasNotice(
             'Using image ' . getenv('AWS_ECR_REGISTRY_URI') .
             ':test-hash with repo-digest ' . getenv('AWS_ECR_REGISTRY_URI') . '@sha256:' .
             ImageTest::TEST_HASH_DIGEST,

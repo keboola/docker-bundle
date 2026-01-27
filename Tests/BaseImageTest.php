@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 abstract class BaseImageTest extends TestCase
 {
     use TestEnvVarsTrait;
 
     private ObjectEncryptor $encryptor;
+    protected readonly TestHandler $logsHandler;
+    protected readonly LoggerInterface $logger;
+    protected readonly ImageFactory $imageFactory;
 
     protected function setUp(): void
     {
@@ -32,6 +39,11 @@ abstract class BaseImageTest extends TestCase
             null,
             null,
         ));
+
+        $this->logsHandler = new TestHandler();
+        $this->logger = new Logger('test', [$this->logsHandler]);
+
+        $this->imageFactory = new ImageFactory($this->logger);
     }
 
     protected function getEncryptor(): ObjectEncryptor
