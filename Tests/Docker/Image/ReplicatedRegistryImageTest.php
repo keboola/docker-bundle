@@ -107,4 +107,67 @@ class ReplicatedRegistryImageTest extends TestCase
             $image->getImageId(),
         );
     }
+
+    public function testImageIdTransformationWhenServiceDisabled(): void
+    {
+        $imageConfig = new ComponentSpecification([
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => self::ECR_URI,
+                ],
+            ],
+        ]);
+
+        $service = new ReplicatedRegistry(
+            false,
+            self::REPLICATED_REGISTRY_URL,
+            'testuser',
+            'testpass',
+        );
+
+        $image = new ReplicatedRegistryImage(
+            $imageConfig,
+            new NullLogger(),
+            $service,
+        );
+
+        // transformImageUrl() checks for non-empty URL, not isEnabled()
+        // So transformation still happens when URL is set
+        self::assertEquals(
+            'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
+            $image->getImageId(),
+        );
+    }
+
+    public function testImageIdTransformationWithEmptyReplicatedUrl(): void
+    {
+        $imageConfig = new ComponentSpecification([
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => self::ECR_URI,
+                ],
+            ],
+        ]);
+
+        $service = new ReplicatedRegistry(
+            true,
+            '',
+            'testuser',
+            'testpass',
+        );
+
+        $image = new ReplicatedRegistryImage(
+            $imageConfig,
+            new NullLogger(),
+            $service,
+        );
+
+        // When replicated registry URL is empty, original ECR URL should be returned
+        self::assertEquals(
+            self::ECR_URI,
+            $image->getImageId(),
+        );
+    }
 }
