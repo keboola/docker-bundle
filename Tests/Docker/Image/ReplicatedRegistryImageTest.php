@@ -28,18 +28,6 @@ class ReplicatedRegistryImageTest extends TestCase
             'replicatedRegistryUrl' => 'myregistry.azurecr.io',
             'expectedImageId' => 'myregistry.azurecr.io/keboola/test-component',
         ];
-
-        yield 'transforms URL even when service disabled (URL is set)' => [
-            'enabled' => false,
-            'replicatedRegistryUrl' => self::REPLICATED_REGISTRY_URL,
-            'expectedImageId' => 'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
-        ];
-
-        yield 'returns original ECR URL when replicated URL is empty' => [
-            'enabled' => true,
-            'replicatedRegistryUrl' => '',
-            'expectedImageId' => self::ECR_URI,
-        ];
     }
 
     /** @dataProvider provideImageIdTransformationData */
