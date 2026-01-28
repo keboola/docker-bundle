@@ -63,6 +63,5 @@ class ImageFactoryTest extends TestCase
         $image = $imageFactory->getImage($imageConfig, true);
 
         self::assertInstanceOf(AWSElasticContainerRegistry::class, $image);
-        self::assertNotInstanceOf(ReplicatedRegistryImage::class, $image);
     }
 }

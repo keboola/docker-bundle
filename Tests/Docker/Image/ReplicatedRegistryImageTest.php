@@ -15,8 +15,39 @@ class ReplicatedRegistryImageTest extends TestCase
     private const ECR_URI = '147946154733.dkr.ecr.us-east-1.amazonaws.com/keboola/test-component';
     private const REPLICATED_REGISTRY_URL = 'us-docker.pkg.dev/my-project/my-repo';
 
-    public function testGetImageIdTransformsUrl(): void
+    public static function provideImageIdTransformationData(): iterable
     {
+        yield 'transforms ECR URL to GAR URL' => [
+            'enabled' => true,
+            'replicatedRegistryUrl' => self::REPLICATED_REGISTRY_URL,
+            'expectedImageId' => 'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
+        ];
+
+        yield 'transforms ECR URL to ACR URL' => [
+            'enabled' => true,
+            'replicatedRegistryUrl' => 'myregistry.azurecr.io',
+            'expectedImageId' => 'myregistry.azurecr.io/keboola/test-component',
+        ];
+
+        yield 'transforms URL even when service disabled (URL is set)' => [
+            'enabled' => false,
+            'replicatedRegistryUrl' => self::REPLICATED_REGISTRY_URL,
+            'expectedImageId' => 'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
+        ];
+
+        yield 'returns original ECR URL when replicated URL is empty' => [
+            'enabled' => true,
+            'replicatedRegistryUrl' => '',
+            'expectedImageId' => self::ECR_URI,
+        ];
+    }
+
+    /** @dataProvider provideImageIdTransformationData */
+    public function testGetImageIdTransformation(
+        bool $enabled,
+        string $replicatedRegistryUrl,
+        string $expectedImageId,
+    ): void {
         $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
@@ -27,8 +58,8 @@ class ReplicatedRegistryImageTest extends TestCase
         ]);
 
         $service = new ReplicatedRegistry(
-            true,
-            self::REPLICATED_REGISTRY_URL,
+            $enabled,
+            $replicatedRegistryUrl,
             'testuser',
             'testpass',
         );
@@ -39,10 +70,7 @@ class ReplicatedRegistryImageTest extends TestCase
             $service,
         );
 
-        self::assertEquals(
-            'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
-            $image->getImageId(),
-        );
+        self::assertEquals($expectedImageId, $image->getImageId());
     }
 
     public function testGetFullImageIdIncludesTag(): void
@@ -76,98 +104,4 @@ class ReplicatedRegistryImageTest extends TestCase
         );
     }
 
-    public function testGetImageIdWithAcrUrl(): void
-    {
-        $acrUrl = 'myregistry.azurecr.io';
-
-        $imageConfig = new ComponentSpecification([
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => self::ECR_URI,
-                ],
-            ],
-        ]);
-
-        $service = new ReplicatedRegistry(
-            true,
-            $acrUrl,
-            'testuser',
-            'testpass',
-        );
-
-        $image = new ReplicatedRegistryImage(
-            $imageConfig,
-            new NullLogger(),
-            $service,
-        );
-
-        self::assertEquals(
-            'myregistry.azurecr.io/keboola/test-component',
-            $image->getImageId(),
-        );
-    }
-
-    public function testImageIdTransformationWhenServiceDisabled(): void
-    {
-        $imageConfig = new ComponentSpecification([
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => self::ECR_URI,
-                ],
-            ],
-        ]);
-
-        $service = new ReplicatedRegistry(
-            false,
-            self::REPLICATED_REGISTRY_URL,
-            'testuser',
-            'testpass',
-        );
-
-        $image = new ReplicatedRegistryImage(
-            $imageConfig,
-            new NullLogger(),
-            $service,
-        );
-
-        // transformImageUrl() checks for non-empty URL, not isEnabled()
-        // So transformation still happens when URL is set
-        self::assertEquals(
-            'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
-            $image->getImageId(),
-        );
-    }
-
-    public function testImageIdTransformationWithEmptyReplicatedUrl(): void
-    {
-        $imageConfig = new ComponentSpecification([
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => self::ECR_URI,
-                ],
-            ],
-        ]);
-
-        $service = new ReplicatedRegistry(
-            true,
-            '',
-            'testuser',
-            'testpass',
-        );
-
-        $image = new ReplicatedRegistryImage(
-            $imageConfig,
-            new NullLogger(),
-            $service,
-        );
-
-        // When replicated registry URL is empty, original ECR URL should be returned
-        self::assertEquals(
-            self::ECR_URI,
-            $image->getImageId(),
-        );
-    }
 }
