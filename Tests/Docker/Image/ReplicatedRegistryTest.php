@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 
 class ReplicatedRegistryTest extends TestCase
@@ -111,7 +112,7 @@ class ReplicatedRegistryTest extends TestCase
         ];
     }
 
-    public function testTransformImageUrlWithEmptyRegistryUrl(): void
+    public function testTransformImageUrlWhenDisabledThrowsException(): void
     {
         $service = new ReplicatedRegistry(
             false,
@@ -120,10 +121,10 @@ class ReplicatedRegistryTest extends TestCase
             'testpass',
         );
 
-        $originalUrl = '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1';
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Replicated registry is not enabled');
 
-        // When registry URL is empty, original URL should be returned unchanged
-        self::assertSame($originalUrl, $service->transformImageUrl($originalUrl));
+        $service->transformImageUrl('147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1');
     }
 
     /** @dataProvider loginParamsDataProvider */

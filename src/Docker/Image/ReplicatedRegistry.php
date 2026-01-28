@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Image;
 
+use LogicException;
 use SensitiveParameter;
 
 class ReplicatedRegistry
@@ -26,10 +27,10 @@ class ReplicatedRegistry
 
     public function transformImageUrl(string $originalImageId): string
     {
-        if (!empty($this->replicatedRegistryUrl)) {
-            return str_replace(self::ECR_REGISTRY_URL, $this->replicatedRegistryUrl, $originalImageId);
+        if (!$this->isEnabled()) {
+            throw new LogicException('Replicated registry is not enabled');
         }
-        return $originalImageId;
+        return str_replace(self::ECR_REGISTRY_URL, $this->replicatedRegistryUrl, $originalImageId);
     }
 
     public function getLoginParams(): string
