@@ -103,5 +103,4 @@ class ReplicatedRegistryImageTest extends TestCase
             $image->getFullImageId(),
         );
     }
-
 }
