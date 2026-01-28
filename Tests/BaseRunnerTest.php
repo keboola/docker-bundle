@@ -69,7 +69,7 @@ abstract class BaseRunnerTest extends TestCase
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
             $stackId,
             self::getRequiredEnv('AWS_KMS_TEST_KEY'),
-            self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
+            self::getRequiredEnv('AWS_KMS_REGION'),
             null,
             null,
         ));

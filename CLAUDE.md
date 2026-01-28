@@ -82,6 +82,7 @@ Tests require real Keboola Storage API credentials and AWS resources. Copy `.env
 - `STORAGE_API_TOKEN_NETWORK_POLICY` - Token with network policy enabled
 - `AWS_ECR_*` - AWS ECR credentials and registry info
 - `AWS_KMS_TEST_KEY` - AWS KMS key for encryption tests
+- `AWS_KMS_REGION` - AWS region where the testing KMS key is located
 - `DOCKERHUB_PRIVATE_*` - Private Docker Hub credentials (optional)
 - `RUNNER_MIN_LOG_PORT` / `RUNNER_MAX_LOG_PORT` - Port range for GELF logging
 
