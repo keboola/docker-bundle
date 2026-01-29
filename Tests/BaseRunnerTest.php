@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
@@ -67,7 +69,7 @@ abstract class BaseRunnerTest extends TestCase
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
             $stackId,
             self::getRequiredEnv('AWS_KMS_TEST_KEY'),
-            self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
+            self::getRequiredEnv('AWS_KMS_REGION'),
             null,
             null,
         ));
@@ -186,6 +188,15 @@ abstract class BaseRunnerTest extends TestCase
             $this->loggersServiceStub,
             new OutputFilter(10000),
             ['cpu_count' => 2],
+            new ImageFactory(
+                $this->loggersServiceStub->getLog(),
+                new ReplicatedRegistry(
+                    false,
+                    'dummy-registry-url',
+                    'dummy-user',
+                    'dummy-pass',
+                ),
+            ),
             (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT'),
         );
     }

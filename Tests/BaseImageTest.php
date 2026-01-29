@@ -4,17 +4,25 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 abstract class BaseImageTest extends TestCase
 {
     use TestEnvVarsTrait;
 
     private ObjectEncryptor $encryptor;
+    protected readonly TestHandler $logsHandler;
+    protected readonly LoggerInterface $logger;
+    protected readonly ImageFactory $imageFactory;
 
     protected function setUp(): void
     {
@@ -28,10 +36,21 @@ abstract class BaseImageTest extends TestCase
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
             $stackId,
             self::getRequiredEnv('AWS_KMS_TEST_KEY'),
-            self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
+            self::getRequiredEnv('AWS_KMS_REGION'),
             null,
             null,
         ));
+
+        $this->logsHandler = new TestHandler();
+        $this->logger = new Logger('test', [$this->logsHandler]);
+
+        $replicatedRegistry = new ReplicatedRegistry(
+            false,
+            'dummy-registry-url',
+            'dummy-user',
+            'dummy-pass',
+        );
+        $this->imageFactory = new ImageFactory($this->logger, $replicatedRegistry);
     }
 
     protected function getEncryptor(): ObjectEncryptor

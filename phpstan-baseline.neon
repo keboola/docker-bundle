@@ -376,16 +376,6 @@ parameters:
 			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Image\\\\AWSElasticContainerRegistryTest\\:\\:testInvalidCredentials\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Image\\\\AWSElasticContainerRegistryTest\\:\\:testMissingCredentials\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|false given\\.$#"
 			count: 3
 			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
@@ -901,6 +891,21 @@ parameters:
 			path: src/Docker/Configuration/Adapter.php
 
 		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Authorization/AppProxyDefinition.php
+
+		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Authorization/AuthorizationDefinition.php
+
+		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 2
+			path: src/Docker/Configuration/Component.php
+
+		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Configuration\\\\ComponentState\\:\\:parse\\(\\) has parameter \\$configurations with no type specified\\.$#"
 			count: 1
 			path: src/Docker/Configuration/ComponentState.php
@@ -916,9 +921,59 @@ parameters:
 			path: src/Docker/Configuration/ComponentState/Adapter.php
 
 		-
+			message: "#^Call to method append\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Container.php
+
+		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 3
+			path: src/Docker/Configuration/Container.php
+
+		-
+			message: "#^Call to method scalarNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Container.php
+
+		-
+			message: "#^Call to method variableNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Container.php
+
+		-
+			message: "#^Call to method scalarNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Image.php
+
+		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Configuration\\\\Image\\:\\:configureNode\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Configuration/Image.php
+
+		-
+			message: "#^Call to method scalarNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/SharedCodeRow.php
+
+		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/State.php
+
+		-
+			message: "#^Call to method scalarNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Usage.php
+
+		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/VariableValues.php
+
+		-
+			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
+			count: 1
+			path: src/Docker/Configuration/Variables.php
 
 		-
 			message: "#^Cannot call method getErrorOutput\\(\\) on Keboola\\\\DockerBundle\\\\Docker\\\\Container\\\\Process\\|null\\.$#"

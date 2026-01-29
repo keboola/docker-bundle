@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
@@ -123,8 +124,16 @@ abstract class BaseContainerTest extends TestCase
         $log = new Logger('runner-tests', [$this->testHandler]);
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
-        $image = ImageFactory::getImage(
+        $imageFactory = new ImageFactory(
             $log,
+            new ReplicatedRegistry(
+                false,
+                'dummy-registry-url',
+                'dummy-user',
+                'dummy-pass',
+            ),
+        );
+        $image = $imageFactory->getImage(
             new ComponentSpecification($imageConfig),
             true,
         );

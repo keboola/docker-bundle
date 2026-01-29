@@ -4,32 +4,45 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Psr\Log\LoggerInterface;
 
-abstract class ImageFactory
+class ImageFactory
 {
     public const KNOWN_IMAGE_TYPES = ['dockerhub', 'quayio', 'aws-ecr'];
 
+    public function __construct(
+        private readonly LoggerInterface $logger,
+        private readonly ReplicatedRegistry $replicatedRegistry,
+    ) {
+    }
+
     /**
      * @param bool $isMain True to mark the image as main image.
-     * @return Image
      */
-    public static function getImage(
-        LoggerInterface $logger,
+    public function getImage(
         ComponentSpecification $component,
-        $isMain,
-    ) {
+        bool $isMain,
+    ): Image {
         switch ($component->getType()) {
             case 'dockerhub':
-                $instance = new Image\DockerHub($component, $logger);
+                $instance = new Image\DockerHub($component, $this->logger);
                 break;
             case 'quayio':
-                $instance = new Image\QuayIO($component, $logger);
+                $instance = new Image\QuayIO($component, $this->logger);
                 break;
             case 'aws-ecr':
-                $instance = new Image\AWSElasticContainerRegistry($component, $logger);
+                if ($this->replicatedRegistry->isEnabled()) {
+                    $instance = new Image\ReplicatedRegistryImage(
+                        $component,
+                        $this->logger,
+                        $this->replicatedRegistry,
+                    );
+                } else {
+                    $instance = new Image\AWSElasticContainerRegistry($component, $this->logger);
+                }
                 break;
             default:
                 throw new ApplicationException('Unknown image type: ' . $component->getType());
