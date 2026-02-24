@@ -3,3 +3,4 @@
 /.env.local
 /.env.local.php
 /.env.*.local
+/.claude/*.local.*
