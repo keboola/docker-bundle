@@ -24,6 +24,7 @@ use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\JobQueue\JobConfiguration\Exception\InvalidDataException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Artifacts\Artifacts as ArtifactsConfiguration;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration as JobConfiguration;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
@@ -268,7 +269,8 @@ class Runner
         $artifacts = new Artifacts(
             $this->clientWrapper,
             $this->loggersService->getLog(),
-            $temp,
+            $temp->getTmpFolder(),
+            $workingDirectory->getDataDir(),
         );
 
         $imageCreator = new ImageCreator(
@@ -564,7 +566,7 @@ class Runner
                             $jobId,
                             $orchestrationId,
                         ),
-                        $image->getConfigData(),
+                        ArtifactsConfiguration::fromArray($image->getConfigData()['artifacts'] ?? []),
                     );
                     $output->setArtifactsDownloaded($downloadedArtifacts);
                 }
@@ -655,7 +657,7 @@ class Runner
                                 $configId,
                                 $jobId,
                                 $orchestrationId,
-                            ), $image->getConfigData());
+                            ), ArtifactsConfiguration::fromArray($image->getConfigData()['artifacts'] ?? []));
                             $output->setArtifactsUploaded($uploadedArtifacts);
                         } catch (ArtifactsException $e) {
                             $this->loggersService->getLog()->warning(
