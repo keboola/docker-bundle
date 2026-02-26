@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -25,7 +25,14 @@ class ReplicatedRegistryImage extends Image
 
     public function getImageId(): string
     {
-        return $this->replicatedRegistry->transformImageUrl(parent::getImageId());
+        $definitionName = $this->getSourceComponent()->getImageName();
+        if ($definitionName === null) {
+            throw new LogicException(sprintf(
+                'Component "%s" is missing definition.name required for replicated registry.',
+                $this->getSourceComponent()->getId(),
+            ));
+        }
+        return $this->replicatedRegistry->composeImageUrl($definitionName);
     }
 
     protected function pullImage(): void

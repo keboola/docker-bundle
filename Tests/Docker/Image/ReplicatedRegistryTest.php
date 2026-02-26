@@ -57,10 +57,10 @@ class ReplicatedRegistryTest extends TestCase
         ];
     }
 
-    /** @dataProvider transformImageUrlDataProvider */
-    public function testTransformImageUrl(
+    /** @dataProvider composeImageUrlDataProvider */
+    public function testComposeImageUrl(
         string $replicatedRegistryUrl,
-        string $originalUrl,
+        string $definitionName,
         string $expectedUrl,
     ): void {
         $service = new ReplicatedRegistry(
@@ -70,61 +70,55 @@ class ReplicatedRegistryTest extends TestCase
             'testpass',
         );
 
-        self::assertSame($expectedUrl, $service->transformImageUrl($originalUrl));
+        self::assertSame($expectedUrl, $service->composeImageUrl($definitionName));
     }
 
-    public static function transformImageUrlDataProvider(): iterable
+    public static function composeImageUrlDataProvider(): iterable
     {
-        yield 'ECR to GAR with tag' => [
+        yield 'replicated URL when defined' => [
             'replicatedRegistryUrl' => 'registry.example.com/keboola',
-            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/component:1.0.0',
-            'expectedUrl' => 'registry.example.com/keboola/developer-portal-v2/component:1.0.0',
-        ];
-        yield 'ECR to GAR without tag' => [
-            'replicatedRegistryUrl' => 'registry.example.com/keboola',
-            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/component',
+            'definitionName' => 'developer-portal-v2/component',
             'expectedUrl' => 'registry.example.com/keboola/developer-portal-v2/component',
         ];
-        yield 'ECR to GAR with digest' => [
+        yield 'replicated URL with trailing slash is normalised' => [
+            'replicatedRegistryUrl' => 'registry.example.com/keboola/',
+            'definitionName' => 'component',
+            'expectedUrl' => 'registry.example.com/keboola/component',
+        ];
+        yield 'definition name with excess slashes is normalised' => [
             'replicatedRegistryUrl' => 'registry.example.com/keboola',
-            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component@sha256:abcd1234',
-            'expectedUrl' => 'registry.example.com/keboola/component@sha256:abcd1234',
-        ];
-        yield 'non-ECR image unchanged' => [
-            'replicatedRegistryUrl' => 'registry.example.com/keboola',
-            'originalUrl' => 'docker.io/library/nginx:latest',
-            'expectedUrl' => 'docker.io/library/nginx:latest',
-        ];
-        yield 'ECR to ACR' => [
-            'replicatedRegistryUrl' => 'myregistry.azurecr.io',
-            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1',
-            'expectedUrl' => 'myregistry.azurecr.io/component:v1',
-        ];
-        yield 'ECR to GAR with port' => [
-            'replicatedRegistryUrl' => 'registry.example.com:5000/keboola',
-            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:latest',
-            'expectedUrl' => 'registry.example.com:5000/keboola/component:latest',
-        ];
-        yield 'ECR to GAR with multiple path segments' => [
-            'replicatedRegistryUrl' => 'registry.example.com/org/team/keboola',
-            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1.0.0',
-            'expectedUrl' => 'registry.example.com/org/team/keboola/component:v1.0.0',
+            'definitionName' => '/component/name/',
+            'expectedUrl' => 'registry.example.com/keboola/component/name',
         ];
     }
 
-    public function testTransformImageUrlWhenDisabledThrowsException(): void
-    {
-        $service = new ReplicatedRegistry(
-            false,
-            '',
-            'testuser',
-            'testpass',
-        );
+    /** @dataProvider composeImageUrlWhenDisabledDataProvider */
+    public function testComposeImageUrlWhenDisabledThrowsException(
+        bool $useReplicatedRegistry,
+        string $replicatedRegistryUrl,
+    ): void {
+        $service = new ReplicatedRegistry($useReplicatedRegistry, $replicatedRegistryUrl, 'testuser', 'testpass');
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Replicated registry is not enabled');
 
-        $service->transformImageUrl('147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1');
+        $service->composeImageUrl('keboola/component');
+    }
+
+    public static function composeImageUrlWhenDisabledDataProvider(): iterable
+    {
+        yield 'disabled with empty URL' => [
+            'useReplicatedRegistry' => false,
+            'replicatedRegistryUrl' => '',
+        ];
+        yield 'disabled with non-empty URL' => [
+            'useReplicatedRegistry' => false,
+            'replicatedRegistryUrl' => 'registry.example.com/keboola',
+        ];
+        yield 'enabled with empty URL' => [
+            'useReplicatedRegistry' => true,
+            'replicatedRegistryUrl' => '',
+        ];
     }
 
     /** @dataProvider loginParamsDataProvider */
