@@ -25,14 +25,14 @@ class ReplicatedRegistryImage extends Image
 
     public function getImageId(): string
     {
-        $definitionName = $this->getSourceComponent()->getImageName();
-        if ($definitionName === null) {
+        $imageName = $this->getSourceComponent()->getImageName();
+        if ($imageName === null) {
             throw new LogicException(sprintf(
                 'Component "%s" is missing definition.name required for replicated registry.',
                 $this->getSourceComponent()->getId(),
             ));
         }
-        return $this->replicatedRegistry->composeImageUrl($definitionName);
+        return $this->replicatedRegistry->composeImageUrl($imageName);
     }
 
     protected function pullImage(): void

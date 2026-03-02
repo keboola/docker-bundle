@@ -60,7 +60,7 @@ class ReplicatedRegistryTest extends TestCase
     /** @dataProvider composeImageUrlDataProvider */
     public function testComposeImageUrl(
         string $replicatedRegistryUrl,
-        string $definitionName,
+        string $imageName,
         string $expectedUrl,
     ): void {
         $service = new ReplicatedRegistry(
@@ -70,25 +70,20 @@ class ReplicatedRegistryTest extends TestCase
             'testpass',
         );
 
-        self::assertSame($expectedUrl, $service->composeImageUrl($definitionName));
+        self::assertSame($expectedUrl, $service->composeImageUrl($imageName));
     }
 
     public static function composeImageUrlDataProvider(): iterable
     {
         yield 'replicated URL when defined' => [
             'replicatedRegistryUrl' => 'registry.example.com/keboola',
-            'definitionName' => 'developer-portal-v2/component',
+            'imageName' => 'developer-portal-v2/component',
             'expectedUrl' => 'registry.example.com/keboola/developer-portal-v2/component',
         ];
         yield 'replicated URL with trailing slash is normalised' => [
             'replicatedRegistryUrl' => 'registry.example.com/keboola/',
-            'definitionName' => 'component',
+            'imageName' => 'component',
             'expectedUrl' => 'registry.example.com/keboola/component',
-        ];
-        yield 'definition name with excess slashes is normalised' => [
-            'replicatedRegistryUrl' => 'registry.example.com/keboola',
-            'definitionName' => '/component/name/',
-            'expectedUrl' => 'registry.example.com/keboola/component/name',
         ];
     }
 
