@@ -7,8 +7,8 @@ namespace Keboola\DockerBundle\Tests\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Docker\Image\ReplicatedRegistryImage;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
-use LogicException;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 class ReplicatedRegistryImageTest extends TestCase
@@ -93,7 +93,7 @@ class ReplicatedRegistryImageTest extends TestCase
         );
     }
 
-    public function testGetImageIdThrowsWhenDefinitionNameMissing(): void
+    public function testGetImageIdFallsBackToUriTransformationWhenDefinitionNameMissing(): void
     {
         $imageConfig = new ComponentSpecification([
             'data' => [
@@ -111,15 +111,22 @@ class ReplicatedRegistryImageTest extends TestCase
             'testpass',
         );
 
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with(self::stringContains($imageConfig->getId()));
+
         $image = new ReplicatedRegistryImage(
             $imageConfig,
-            new NullLogger(),
+            $logger,
             $service,
         );
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('definition.name required for replicated registry');
+        $result = $image->getImageId();
 
-        $image->getImageId();
+        self::assertSame(
+            'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
+            $result,
+        );
     }
 }
