@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
-use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -27,10 +26,11 @@ class ReplicatedRegistryImage extends Image
     {
         $imageName = $this->getSourceComponent()->getImageName();
         if ($imageName === null) {
-            throw new LogicException(sprintf(
-                'Component "%s" is missing definition.name required for replicated registry.',
+            $this->logger->warning(sprintf(
+                'Component "%s" is missing definition.name, falling back to URI-based registry transformation.',
                 $this->getSourceComponent()->getId(),
             ));
+            return $this->replicatedRegistry->transformImageUrl($this->imageId);
         }
         return $this->replicatedRegistry->composeImageUrl($imageName);
     }

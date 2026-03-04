@@ -116,6 +116,90 @@ class ReplicatedRegistryTest extends TestCase
         ];
     }
 
+    /** @dataProvider transformImageUrlDataProvider */
+    public function testTransformImageUrl(
+        string $replicatedRegistryUrl,
+        string $originalUrl,
+        string $expectedUrl,
+    ): void {
+        $service = new ReplicatedRegistry(
+            true,
+            $replicatedRegistryUrl,
+            'testuser',
+            'testpass',
+        );
+
+        self::assertSame($expectedUrl, $service->transformImageUrl($originalUrl));
+    }
+
+    public static function transformImageUrlDataProvider(): iterable
+    {
+        yield 'ECR to GAR with tag' => [
+            'replicatedRegistryUrl' => 'registry.example.com/keboola',
+            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/component:1.0.0',
+            'expectedUrl' => 'registry.example.com/keboola/developer-portal-v2/component:1.0.0',
+        ];
+        yield 'ECR to GAR without tag' => [
+            'replicatedRegistryUrl' => 'registry.example.com/keboola',
+            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/component',
+            'expectedUrl' => 'registry.example.com/keboola/developer-portal-v2/component',
+        ];
+        yield 'ECR to GAR with digest' => [
+            'replicatedRegistryUrl' => 'registry.example.com/keboola',
+            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component@sha256:abcd1234',
+            'expectedUrl' => 'registry.example.com/keboola/component@sha256:abcd1234',
+        ];
+        yield 'non-ECR image unchanged' => [
+            'replicatedRegistryUrl' => 'registry.example.com/keboola',
+            'originalUrl' => 'docker.io/library/nginx:latest',
+            'expectedUrl' => 'docker.io/library/nginx:latest',
+        ];
+        yield 'ECR to ACR' => [
+            'replicatedRegistryUrl' => 'myregistry.azurecr.io',
+            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1',
+            'expectedUrl' => 'myregistry.azurecr.io/component:v1',
+        ];
+        yield 'ECR to GAR with port' => [
+            'replicatedRegistryUrl' => 'registry.example.com:5000/keboola',
+            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:latest',
+            'expectedUrl' => 'registry.example.com:5000/keboola/component:latest',
+        ];
+        yield 'ECR to GAR with multiple path segments' => [
+            'replicatedRegistryUrl' => 'registry.example.com/org/team/keboola',
+            'originalUrl' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1.0.0',
+            'expectedUrl' => 'registry.example.com/org/team/keboola/component:v1.0.0',
+        ];
+    }
+
+    /** @dataProvider transformImageUrlWhenDisabledDataProvider */
+    public function testTransformImageUrlWhenDisabledThrowsException(
+        bool $useReplicatedRegistry,
+        string $replicatedRegistryUrl,
+    ): void {
+        $service = new ReplicatedRegistry($useReplicatedRegistry, $replicatedRegistryUrl, 'testuser', 'testpass');
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Replicated registry is not enabled');
+
+        $service->transformImageUrl('147946154733.dkr.ecr.us-east-1.amazonaws.com/component:v1');
+    }
+
+    public static function transformImageUrlWhenDisabledDataProvider(): iterable
+    {
+        yield 'disabled with empty URL' => [
+            'useReplicatedRegistry' => false,
+            'replicatedRegistryUrl' => '',
+        ];
+        yield 'disabled with non-empty URL' => [
+            'useReplicatedRegistry' => false,
+            'replicatedRegistryUrl' => 'registry.example.com/keboola',
+        ];
+        yield 'enabled with empty URL' => [
+            'useReplicatedRegistry' => true,
+            'replicatedRegistryUrl' => '',
+        ];
+    }
+
     /** @dataProvider loginParamsDataProvider */
     public function testGetLoginParams(
         string $registryUrl,
