@@ -53,8 +53,8 @@ class RunnerAbsTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
-                    'tag' => '0.0.3',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-staging-test',
+                    'tag' => '0.1.1',
                 ],
                 'staging_storage' => [
                     'input' => 'abs',

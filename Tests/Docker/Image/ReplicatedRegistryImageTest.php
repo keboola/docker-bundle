@@ -13,7 +13,7 @@ use Psr\Log\NullLogger;
 
 class ReplicatedRegistryImageTest extends TestCase
 {
-    private const ECR_URI = '147946154733.dkr.ecr.us-east-1.amazonaws.com/keboola/test-component';
+    private const ECR_URI = '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/test-component';
     private const IMAGE_NAME = 'keboola/test-component';
     private const REPLICATED_REGISTRY_URL = 'us-docker.pkg.dev/my-project/my-repo';
 
@@ -125,7 +125,7 @@ class ReplicatedRegistryImageTest extends TestCase
         $result = $image->getImageId();
 
         self::assertSame(
-            'us-docker.pkg.dev/my-project/my-repo/keboola/test-component',
+            'us-docker.pkg.dev/my-project/my-repo/developer-portal-v2/test-component',
             $result,
         );
     }

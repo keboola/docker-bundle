@@ -28,7 +28,7 @@ STORAGE_API_TOKEN_NETWORK_POLICY=
 # AWS ECR
 # RepositoryUrl, Region — CloudFormation stack > Outputs tab
 # IAM access keys — CloudFormation stack > Resources tab > DockerRunnerUser > IAM console > Security credentials > Create access key
-AWS_ECR_REGISTRY_URI=           # RepositoryUrl
+AWS_ECR_REGISTRY_NAME=          # ECR name (e.g. developer-portal-v2)
 AWS_ECR_REGISTRY_REGION=        # Region
 AWS_ECR_REGISTRY_ACCOUNT_ID=    # first part of the registry URI
 AWS_ECR_ACCESS_KEY_ID=          # IAM user access key

@@ -3183,7 +3183,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-workspace-test',
                     'tag' => 'latest',
                 ],
                 'staging_storage' => [
@@ -3266,7 +3266,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-workspace-test',
                     'tag' => 'latest',
                 ],
                 'staging_storage' => [
@@ -3344,7 +3344,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-workspace-test',
                     'tag' => 'latest',
                 ],
                 'staging_storage' => [
@@ -3433,8 +3433,8 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
-                    'tag' => '0.0.3',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-staging-test',
+                    'tag' => '0.1.1',
                 ],
                 'staging_storage' => [
                     'input' => 's3',
@@ -3512,8 +3512,8 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
-                    'tag' => '0.1.0',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-staging-test',
+                    'tag' => '0.1.1',
                 ],
                 'staging_storage' => [
                     'input' => 'local',
@@ -3596,8 +3596,8 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
-                    'tag' => '0.1.0',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-staging-test',
+                    'tag' => '0.1.1',
                 ],
                 'staging_storage' => [
                     'input' => 'local',
@@ -3678,8 +3678,8 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
-                    'tag' => '0.1.0',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-staging-test',
+                    'tag' => '0.1.1',
                 ],
                 'staging_storage' => [
                     'input' => 'local',
@@ -3831,7 +3831,7 @@ class RunnerTest extends BaseRunnerTest
                     'type' => 'aws-ecr',
                     // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.snowflake-transformation',
-                    'tag' => '0.7.0',
+                    'tag' => '1.5.0',
                 ],
                 'staging_storage' => [
                     'input' => 'workspace-snowflake',
