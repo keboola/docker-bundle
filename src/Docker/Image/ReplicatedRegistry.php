@@ -9,8 +9,6 @@ use SensitiveParameter;
 
 class ReplicatedRegistry
 {
-    private const ECR_REGISTRY_URL = '147946154733.dkr.ecr.us-east-1.amazonaws.com';
-
     public function __construct(
         private readonly bool $useReplicatedRegistry,
         private string $replicatedRegistryUrl,
@@ -32,14 +30,6 @@ class ReplicatedRegistry
             throw new LogicException('Replicated registry is not enabled');
         }
         return $this->replicatedRegistryUrl . '/' . $imageName;
-    }
-
-    public function transformImageUrl(string $originalImageId): string
-    {
-        if (!$this->isEnabled()) {
-            throw new LogicException('Replicated registry is not enabled');
-        }
-        return str_replace(self::ECR_REGISTRY_URL, $this->replicatedRegistryUrl, $originalImageId);
     }
 
     public function getLoginParams(): string

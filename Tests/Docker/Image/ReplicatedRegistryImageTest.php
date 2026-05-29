@@ -6,9 +6,9 @@ namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image\ReplicatedRegistry;
 use Keboola\DockerBundle\Docker\Image\ReplicatedRegistryImage;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 class ReplicatedRegistryImageTest extends TestCase
@@ -93,9 +93,10 @@ class ReplicatedRegistryImageTest extends TestCase
         );
     }
 
-    public function testGetImageIdFallsBackToUriTransformationWhenDefinitionNameMissing(): void
+    public function testGetImageIdThrowsWhenDefinitionNameMissing(): void
     {
         $imageConfig = new ComponentSpecification([
+            'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -111,22 +112,18 @@ class ReplicatedRegistryImageTest extends TestCase
             'testpass',
         );
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('warning')
-            ->with(self::stringContains($imageConfig->getId()));
-
         $image = new ReplicatedRegistryImage(
             $imageConfig,
-            $logger,
+            new NullLogger(),
             $service,
         );
 
-        $result = $image->getImageId();
-
-        self::assertSame(
-            'us-docker.pkg.dev/my-project/my-repo/developer-portal-v2/test-component',
-            $result,
+        $this->expectException(ApplicationException::class);
+        $this->expectExceptionMessage(
+            'Component "keboola.test-component" is missing definition.name, '
+            . 'cannot resolve replicated registry image id.',
         );
+
+        $image->getImageId();
     }
 }
