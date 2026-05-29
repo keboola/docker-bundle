@@ -211,7 +211,7 @@ abstract class Image
         $digests = $this->getImageDigests();
         array_walk($digests, function (&$value) {
             // the value looks like:
-            // 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:abcdefghxxxxxxxxxxxxxxxxxxxx
+            // 147946154733.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:abcdefghxxxxxxxxxxxxxxxxxxxx
             if (preg_match('#@sha256:(.*)$#', $value, $matches)) {
                 $value = $matches[1];
             } else {

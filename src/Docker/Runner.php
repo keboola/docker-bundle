@@ -36,6 +36,7 @@ use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
 use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
 use Keboola\StagingProvider\Workspace\WorkspaceProvider;
 use Keboola\StorageApi\ClientException;
@@ -60,6 +61,7 @@ class Runner
     private array $instanceLimits;
     private OutputFilterInterface $outputFilter;
     private ImageFactory $imageFactory;
+    private NetworkPolicy $stagingWorkspaceNetworkPolicy;
     private ?StagingWorkspaceFacade $stagingWorkspace = null;
 
     public function __construct(
@@ -71,6 +73,7 @@ class Runner
         ImageFactory $imageFactory,
         int $minLogPort = 12202,
         int $maxLogPort = 13202,
+        NetworkPolicy $stagingWorkspaceNetworkPolicy = NetworkPolicy::SYSTEM,
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
@@ -91,6 +94,7 @@ class Runner
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
         $this->outputFilter = $outputFilter;
+        $this->stagingWorkspaceNetworkPolicy = $stagingWorkspaceNetworkPolicy;
     }
 
     private function getCommandToGetHostIp(): string
@@ -709,6 +713,7 @@ class Runner
             $stagingWorkspaceFactory = new StagingWorkspaceFactory(
                 $workspaceProvider,
                 $this->loggersService->getLog(),
+                $this->stagingWorkspaceNetworkPolicy,
             );
 
             $stagingWorkspace = $stagingWorkspaceFactory->createStagingWorkspaceFacade(

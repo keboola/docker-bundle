@@ -12,7 +12,13 @@ use Symfony\Component\Process\Process;
 
 class ImageTest extends BaseImageTest
 {
-    public const TEST_HASH_DIGEST = 'a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a';
+    public const TEST_HASH_DIGEST = 'f44de9927422695f478e6a9713f2dd21f6951b6f7cddbdb10500c2b720137042';
+    private const TEST_IMAGE_TAG = '0.1.1';
+
+    private static function testImageUri(): string
+    {
+        return getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-staging-test';
+    }
 
     public function testDockerHub()
     {
@@ -51,15 +57,17 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestNotPulled()
     {
-        $command = Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI') . ':test-hash');
+        $command = Process::fromShellCommandline(
+            'sudo docker rmi ' . self::testImageUri() . ':' . self::TEST_IMAGE_TAG,
+        );
         $command->run();
         $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                    'uri' => self::testImageUri(),
                     'digest' => self::TEST_HASH_DIGEST,
-                    'tag' => 'test-hash',
+                    'tag' => self::TEST_IMAGE_TAG,
                 ],
             ],
         ]);
@@ -67,8 +75,8 @@ class ImageTest extends BaseImageTest
         $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
         self::assertTrue($this->logsHandler->hasNoticeThatContains(
-            'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
+            'Digest "' . self::TEST_HASH_DIGEST . '" for image ' .
+            '"' . self::testImageUri() . ':' . self::TEST_IMAGE_TAG . '" not found.',
         ));
     }
 
@@ -78,9 +86,9 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                    'uri' => self::testImageUri(),
                     'digest' => self::TEST_HASH_DIGEST,
-                    'tag' => 'test-hash',
+                    'tag' => self::TEST_IMAGE_TAG,
                 ],
             ],
         ]);
@@ -93,24 +101,25 @@ class ImageTest extends BaseImageTest
         $image = $this->imageFactory->getImage($imageConfig, true);
         $image->prepare([]);
         self::assertFalse($this->logsHandler->hasNoticeThatContains(
-            'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
+            'Digest "' . self::TEST_HASH_DIGEST . '" for image ' .
+            '"' . self::testImageUri() . ':' . self::TEST_IMAGE_TAG . '" not found.',
         ));
     }
 
     public function testImageDigestInvalid()
     {
-        $imageConfig = new ComponentSpecification([
+        // Pull a different image to obtain a real digest that does not belong to the tested tag.
+        $otherImageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-workspace-test',
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'latest',
                 ],
             ],
         ]);
-        $image = $this->imageFactory->getImage($imageConfig, true);
+        $image = $this->imageFactory->getImage($otherImageConfig, true);
         $image->prepare([]);
         preg_match('#@sha256:(.*)$#', $image->getImageDigests()[0], $matches);
         self::assertCount(2, $matches);
@@ -118,9 +127,9 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                    'uri' => self::testImageUri(),
                     'digest' => $matches[1],
-                    'tag' => 'test-hash',
+                    'tag' => self::TEST_IMAGE_TAG,
                 ],
             ],
         ]);
@@ -132,7 +141,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($this->logsHandler->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .
-            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
+            '"' . self::testImageUri() . ':' . self::TEST_IMAGE_TAG . '" not found.',
         ));
     }
 
@@ -187,9 +196,9 @@ class ImageTest extends BaseImageTest
                     'process_timeout' => $componentTimeout,
                     'definition' => [
                         'type' => 'aws-ecr',
-                        'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                        'uri' => self::testImageUri(),
                         'digest' => self::TEST_HASH_DIGEST,
-                        'tag' => 'test-hash',
+                        'tag' => self::TEST_IMAGE_TAG,
                     ],
                 ],
             ]),

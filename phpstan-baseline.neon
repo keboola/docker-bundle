@@ -376,11 +376,6 @@ parameters:
 			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
 
 		-
-			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|false given\\.$#"
-			count: 3
-			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Image\\\\QuayIORepositoryTest\\:\\:testDownloadedImage\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Image/QuayIORepositoryTest.php

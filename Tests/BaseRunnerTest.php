@@ -15,6 +15,7 @@ use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecifica
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
@@ -198,6 +199,9 @@ abstract class BaseRunnerTest extends TestCase
                 ),
             ),
             (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT'),
+            // tests run the component container externally (CI/local), so the ephemeral
+            // workspace must be reachable via the user network policy
+            stagingWorkspaceNetworkPolicy: NetworkPolicy::USER,
         );
     }
 

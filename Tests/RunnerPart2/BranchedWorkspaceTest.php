@@ -13,6 +13,7 @@ use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -214,7 +215,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI') . '/keboola.runner-workspace-test',
                     'tag' => 'latest',
                 ],
                 'staging_storage' => [
@@ -245,6 +246,9 @@ class BranchedWorkspaceTest extends BaseRunnerTest
                 ),
             ),
             (int) getenv('RUNNER_MIN_LOG_PORT'),
+            // tests run the component container externally (CI/local), so the ephemeral
+            // workspace must be reachable via the user network policy
+            stagingWorkspaceNetworkPolicy: NetworkPolicy::USER,
         );
 
         $outputs = [];
