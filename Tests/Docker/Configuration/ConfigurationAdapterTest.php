@@ -31,7 +31,6 @@ class ConfigurationAdapterTest extends TestCase
                             'where_operator' => 'eq',
                             'column_types' => [],
                             'overwrite' => false,
-                            'use_view' => false,
                             'keep_internal_timestamp_column' => true,
                         ],
                     ],
@@ -75,7 +74,6 @@ storage:
                 where_operator: eq
                 column_types: {  }
                 overwrite: false
-                use_view: false
                 keep_internal_timestamp_column: true
         files: {  }
 parameters:
@@ -113,7 +111,6 @@ EOT;
                     "where_operator": "eq",
                     "column_types": [],
                     "overwrite": false,
-                    "use_view": false,
                     "keep_internal_timestamp_column": true
                 }
             ],
