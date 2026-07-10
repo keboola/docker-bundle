@@ -203,11 +203,18 @@ class Runner
     ) {
         $temp = new Temp();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
+        // The state is already decrypted at this point, so any #-prefixed secret it holds would be logged
+        // in plaintext. Register the state secrets with the output filter and redact the message before
+        // logging it. The application log channel is not filtered automatically, so we do it explicitly
+        // here (this runs before StateFile collects the same values). See AJDA-3007.
+        $this->outputFilter->collectValues($jobDefinition->getState());
         $this->loggersService->getLog()->notice(
-            'Using configuration id: ' . $jobDefinition->getConfigId() .
-            ' version:' . $jobDefinition->getConfigVersion()
-            . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
-            . ', tmp folder: ' . $workingDirectory->getDataDir(),
+            $this->outputFilter->redactSecrets(
+                'Using configuration id: ' . $jobDefinition->getConfigId() .
+                ' version:' . $jobDefinition->getConfigVersion()
+                . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
+                . ', tmp folder: ' . $workingDirectory->getDataDir(),
+            ),
         );
 
         $currentOutput = new Output();
