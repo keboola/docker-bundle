@@ -25,10 +25,20 @@ class OutputFilter implements OutputFilterInterface
      */
     public function addValue(string $value): void
     {
-        $this->filterValues[] = $value;
-        // this is reversible, so hide it too
-        $this->filterValues[] = base64_encode($value);
-        $this->filterValues[] = json_encode($value);
+        $this->addFilterValue($value);
+        // these are reversible, so hide them too
+        $this->addFilterValue(base64_encode($value));
+        $this->addFilterValue((string) json_encode($value));
+    }
+
+    private function addFilterValue(string $value): void
+    {
+        // The same value can be collected repeatedly (e.g. the state is registered for the log line and
+        // again by StateFile, once per job row) - keep the list deduplicated so it does not grow unbounded
+        // and redactSecrets() does not do redundant work on every output line.
+        if (!in_array($value, $this->filterValues, true)) {
+            $this->filterValues[] = $value;
+        }
     }
 
     /**

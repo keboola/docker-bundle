@@ -19,7 +19,6 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Throwable;
 
 class RunnerStateRedactionTest extends TestCase
 {
@@ -52,20 +51,22 @@ class RunnerStateRedactionTest extends TestCase
         $log = new Logger('test', [$testHandler]);
 
         $loggersService = $this->createMock(LoggersService::class);
-        $loggersService->method('getLog')->willReturn($log);
+        $loggersService->expects(self::any())->method('getLog')->willReturn($log);
 
         // Basic client is used only in the Runner constructor.
         $basicClient = $this->createMock(Client::class);
-        $basicClient->method('getTokenString')->willReturn('dummy-token');
-        $basicClient->method('getServiceUrl')->willReturn('https://oauth.example.com');
+        $basicClient->expects(self::any())->method('getTokenString')->willReturn('dummy-token');
+        $basicClient->expects(self::any())->method('getServiceUrl')->willReturn('https://oauth.example.com');
 
         // Halt runRow() right after the "Using configuration id" line so the test needs no Docker/network.
         $branchClient = $this->createMock(BranchAwareClient::class);
-        $branchClient->method('verifyToken')->willThrowException(new RuntimeException('halt after log line'));
+        $branchClient->expects(self::once())
+            ->method('verifyToken')
+            ->willThrowException(new RuntimeException('halt after log line'));
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
-        $clientWrapper->method('getBasicClient')->willReturn($basicClient);
-        $clientWrapper->method('getBranchClient')->willReturn($branchClient);
+        $clientWrapper->expects(self::any())->method('getBasicClient')->willReturn($basicClient);
+        $clientWrapper->expects(self::any())->method('getBranchClient')->willReturn($branchClient);
 
         $runner = new Runner(
             $this->createMock(ObjectEncryptor::class),
@@ -98,8 +99,10 @@ class RunnerStateRedactionTest extends TestCase
                 null,
             );
             self::fail('Expected the run to halt at verifyToken(), but no exception was thrown.');
-        } catch (Throwable) {
-            // expected: we deliberately halt execution right after the log line is emitted
+        } catch (RuntimeException $e) {
+            // expected: we deliberately halt execution right after the log line is emitted; asserting the
+            // message keeps the test hermetic and fails loudly if a different failure path is reached
+            self::assertSame('halt after log line', $e->getMessage());
         }
 
         $record = null;

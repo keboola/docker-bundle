@@ -6,9 +6,27 @@ namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 class OutputFilterTest extends TestCase
 {
+    public function testDuplicateValuesAreStoredOnce(): void
+    {
+        // The same secret may be collected repeatedly (e.g. the state is registered for the log line and
+        // again by StateFile, once per job row). It must not accumulate in the filter list. See AJDA-3007.
+        $filter = new OutputFilter(10 ** 6);
+        $filter->collectValues([['#secret' => 'token']]);
+        $filter->collectValues([['#secret' => 'token']]);
+
+        $property = new ReflectionProperty(OutputFilter::class, 'filterValues');
+        $property->setAccessible(true);
+
+        self::assertSame(
+            ['token', base64_encode('token'), (string) json_encode('token')],
+            $property->getValue($filter),
+        );
+    }
+
     public function testFilter(): void
     {
         $filter = new OutputFilter(10**6);
