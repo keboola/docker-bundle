@@ -20,14 +20,15 @@ use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-class RunnerStateRedactionTest extends TestCase
+class RunnerStateLoggingTest extends TestCase
 {
     /**
-     * The Runner logs the (already decrypted) configuration state at job start. This test guards that
-     * #-prefixed secrets in the state are redacted from that log line before it reaches the application
-     * log channel (and thus Datadog). See AJDA-3007.
+     * At job start the Runner logs a "Using configuration id" notice. The configuration state must NOT be
+     * part of that line: it is already decrypted at this point, so #-prefixed secrets it holds would be
+     * written in plaintext to the (unfiltered) application log channel and shipped to Datadog. See
+     * AJDA-3007.
      */
-    public function testStateSecretsAreRedactedFromConfigurationLogLine(): void
+    public function testStateIsNotLoggedInConfigurationLogLine(): void
     {
         $secret = 'shpat-super-secret-token-value';
         $state = [
@@ -115,10 +116,16 @@ class RunnerStateRedactionTest extends TestCase
 
         self::assertNotNull($record, 'The "Using configuration id" log line was not emitted.');
         self::assertStringNotContainsString(
+            'state:',
+            $record['message'],
+            'The configuration state must not be logged (AJDA-3007).',
+        );
+        self::assertStringNotContainsString(
             $secret,
             $record['message'],
             'The decrypted state secret leaked into the configuration log line.',
         );
-        self::assertStringContainsString('[hidden]', $record['message']);
+        // the useful, non-sensitive fields are still logged
+        self::assertStringContainsString('version:v123', $record['message']);
     }
 }

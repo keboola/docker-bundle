@@ -203,18 +203,14 @@ class Runner
     ) {
         $temp = new Temp();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
-        // The state is already decrypted at this point, so any #-prefixed secret it holds would be logged
-        // in plaintext. Register the state secrets with the output filter and redact the message before
-        // logging it. The application log channel is not filtered automatically, so we do it explicitly
-        // here (this runs before StateFile collects the same values). See AJDA-3007.
-        $this->outputFilter->collectValues($jobDefinition->getState());
+        // The state is intentionally not logged: it is already decrypted at this point, so any #-prefixed
+        // secret it holds (OAuth/API tokens) would be written in plaintext to the application log channel
+        // (which is not passed through OutputFilter) and shipped to Datadog. See AJDA-3007.
         $this->loggersService->getLog()->notice(
-            $this->outputFilter->redactSecrets(
-                'Using configuration id: ' . $jobDefinition->getConfigId() .
-                ' version:' . $jobDefinition->getConfigVersion()
-                . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
-                . ', tmp folder: ' . $workingDirectory->getDataDir(),
-            ),
+            'Using configuration id: ' . $jobDefinition->getConfigId() .
+            ' version:' . $jobDefinition->getConfigVersion()
+            . ', row id: ' . $jobDefinition->getRowId()
+            . ', tmp folder: ' . $workingDirectory->getDataDir(),
         );
 
         $currentOutput = new Output();
