@@ -203,9 +203,6 @@ class Runner
     ) {
         $temp = new Temp();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
-        // The state is intentionally not logged: it is already decrypted at this point, so any #-prefixed
-        // secret it holds (OAuth/API tokens) would be written in plaintext to the application log channel
-        // (which is not passed through OutputFilter) and shipped to Datadog. See AJDA-3007.
         $this->loggersService->getLog()->notice(
             'Using configuration id: ' . $jobDefinition->getConfigId() .
             ' version:' . $jobDefinition->getConfigVersion()
