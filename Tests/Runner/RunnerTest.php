@@ -1008,8 +1008,6 @@ class RunnerTest extends BaseRunnerTest
         );
         $this->assertNotEmpty($outputs);
 
-        // The state is already decrypted here, so it must not appear in the log line (it would leak
-        // #-prefixed secrets in plaintext to the unfiltered application log channel). See AJDA-3007.
         $configRecord = null;
         foreach ($this->getRunnerHandler()->getRecords() as $record) {
             if (str_contains($record['message'], 'Using configuration id')) {
