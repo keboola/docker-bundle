@@ -206,7 +206,7 @@ class Runner
         $this->loggersService->getLog()->notice(
             'Using configuration id: ' . $jobDefinition->getConfigId() .
             ' version:' . $jobDefinition->getConfigVersion()
-            . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
+            . ', row id: ' . $jobDefinition->getRowId()
             . ', tmp folder: ' . $workingDirectory->getDataDir(),
         );
 

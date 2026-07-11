@@ -1007,6 +1007,16 @@ class RunnerTest extends BaseRunnerTest
             null,
         );
         $this->assertNotEmpty($outputs);
+
+        $configRecord = null;
+        foreach ($this->getRunnerHandler()->getRecords() as $record) {
+            if (str_contains($record['message'], 'Using configuration id')) {
+                $configRecord = $record;
+                break;
+            }
+        }
+        self::assertNotNull($configRecord, 'The "Using configuration id" log line was not emitted.');
+        self::assertStringNotContainsString('state:', $configRecord['message']);
     }
 
     public function testExecutorStoreStateWithProcessor(): void
