@@ -62,15 +62,6 @@ stages:
         timeoutInMinutes: 100
         steps:
           - script: |
-              echo '=== disk usage before cleanup ==='
-              df -h /
-              sudo du -sh /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache 2>/dev/null | sort -h || true
-              sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
-              docker system prune -af || true
-              echo '=== disk usage after cleanup ==='
-              df -h /
-            displayName: 'Free disk space'
-          - script: |
               docker compose build --pull
               docker compose run tests ./vendor/bin/phpunit --testsuite runner-tests
             env:
