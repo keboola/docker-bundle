@@ -59,6 +59,8 @@ stages:
 
       - job: runnerTests
         displayName: 'Runner Tests'
+        pool:
+          name: 'Default'
         timeoutInMinutes: 100
         steps:
           - script: |
