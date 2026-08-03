@@ -275,9 +275,7 @@ class Container
         setlocale(LC_CTYPE, 'en_US.UTF-8');
         $envs = '';
         foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
-            $envs .= ' --env "' .
-                str_replace('"', '\"', (string) $key) . '=' .
-                str_replace('"', '\"', (string) $value). '"';
+            $envs .= ' --env ' . escapeshellarg((string) $key . '=' . (string) $value);
         }
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         $command = "sudo timeout --signal=SIGKILL {$this->image->getProcessTimeout()} docker run";
