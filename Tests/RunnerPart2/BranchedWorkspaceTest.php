@@ -20,6 +20,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 
@@ -63,6 +64,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $storageApi->getApiUrl(),
             $storageApi->getTokenString(),
             $branchId,
+            authType: AuthType::STORAGE_TOKEN,
         ));
 
         // run testing job
@@ -94,6 +96,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $storageApi->getApiUrl(),
             $storageApi->getTokenString(),
             $branchId,
+            authType: AuthType::STORAGE_TOKEN,
         ));
 
         // setup configuration inside branch

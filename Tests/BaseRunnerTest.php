@@ -21,6 +21,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\Branch;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\StorageApiToken;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -180,6 +181,7 @@ abstract class BaseRunnerTest extends TestCase
             fn() => new StorageApiToken(
                 $basicClient->verifyToken(),
                 $basicClient->getTokenString(),
+                AuthType::STORAGE_TOKEN,
             ),
         );
 
