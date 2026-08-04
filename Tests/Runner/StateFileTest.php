@@ -18,6 +18,7 @@ use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
@@ -52,6 +53,7 @@ class StateFileTest extends TestCase
         $this->clientWrapper = new ClientWrapper(new ClientOptions(
             self::getRequiredEnv('STORAGE_API_URL'),
             self::getRequiredEnv('STORAGE_API_TOKEN'),
+            authType: AuthType::STORAGE_TOKEN,
         ));
     }
 

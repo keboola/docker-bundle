@@ -15,6 +15,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\AuthType;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Process\Process;
@@ -156,6 +157,7 @@ class ArtifactsTest extends BaseRunnerTest
         $clientWrapper = new ClientWrapper(new ClientOptions(
             url: (string) getenv('STORAGE_API_URL'),
             token: (string) getenv('STORAGE_API_TOKEN'),
+            authType: AuthType::STORAGE_TOKEN,
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -222,6 +224,7 @@ class ArtifactsTest extends BaseRunnerTest
         $clientWrapper = new ClientWrapper(new ClientOptions(
             url: (string) getenv('STORAGE_API_URL'),
             token: (string) getenv('STORAGE_API_TOKEN'),
+            authType: AuthType::STORAGE_TOKEN,
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -292,6 +295,7 @@ class ArtifactsTest extends BaseRunnerTest
         $clientWrapper = new ClientWrapper(new ClientOptions(
             url: (string) getenv('STORAGE_API_URL'),
             token: (string) getenv('STORAGE_API_TOKEN'),
+            authType: AuthType::STORAGE_TOKEN,
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -359,6 +363,7 @@ class ArtifactsTest extends BaseRunnerTest
         $clientWrapper = new ClientWrapper(new ClientOptions(
             url: (string) getenv('STORAGE_API_URL'),
             token: (string) getenv('STORAGE_API_TOKEN'),
+            authType: AuthType::STORAGE_TOKEN,
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -499,6 +504,7 @@ class ArtifactsTest extends BaseRunnerTest
         $clientWrapper = new ClientWrapper(new ClientOptions(
             url: (string) getenv('STORAGE_API_URL'),
             token: (string) getenv('STORAGE_API_TOKEN'),
+            authType: AuthType::STORAGE_TOKEN,
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
         $uploadedFileIds = [];
