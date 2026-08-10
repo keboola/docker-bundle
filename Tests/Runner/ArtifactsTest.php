@@ -6,7 +6,6 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Artifacts\Result;
 use Keboola\DockerBundle\Docker\Runner\Output;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\BranchAwareClient as StorageApiClient;
 use Keboola\StorageApi\Client;
@@ -120,7 +119,6 @@ class ArtifactsTest extends BaseRunnerTest
             'run',
             'run',
             $jobId,
-            new NullUsageFile(),
             [],
             $outputs,
             null,

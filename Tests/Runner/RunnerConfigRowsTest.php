@@ -7,7 +7,6 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
@@ -170,7 +169,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -234,7 +232,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -291,7 +288,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             ['row-2'],
             $outputs,
             null,
@@ -325,7 +321,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             ['row-2'],
             $outputs,
             null,
@@ -341,7 +336,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -397,7 +391,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -468,7 +461,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             ['disabled-row'],
             $outputs,
             null,
@@ -529,7 +521,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -593,7 +584,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -686,7 +676,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -753,7 +742,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -880,7 +868,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             ['row-1'],
             $outputs,
             null,

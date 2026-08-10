@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\BackendTests\ABS;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -99,7 +98,6 @@ class RunnerAbsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,

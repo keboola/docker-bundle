@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\BranchAwareClient;
@@ -89,7 +88,6 @@ class NetworkPolicyTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,

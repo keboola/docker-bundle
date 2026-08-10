@@ -10,7 +10,6 @@ use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
@@ -260,7 +259,6 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             'run',
             'run',
             '123456',
-            new NullUsageFile(),
             [],
             $outputs,
             null,

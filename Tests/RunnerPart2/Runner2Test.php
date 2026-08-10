@@ -6,7 +6,6 @@ namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
@@ -96,7 +95,6 @@ class Runner2Test extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,
@@ -147,7 +145,6 @@ class Runner2Test extends BaseRunnerTest
                 'run',
                 'run',
                 '1234567',
-                new NullUsageFile(),
                 [],
                 $outputs,
                 null,
@@ -215,7 +212,6 @@ class Runner2Test extends BaseRunnerTest
                 'run',
                 'run',
                 '1234567',
-                new NullUsageFile(),
                 [],
                 $outputs,
                 null,
