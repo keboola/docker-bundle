@@ -6,7 +6,6 @@ namespace Keboola\DockerBundle\BackendTests\GCS;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
@@ -161,7 +160,6 @@ class RunnerGCSTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,

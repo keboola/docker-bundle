@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\BackendTests\BigQuery;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\Runner\BaseTableBackendTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -123,7 +122,6 @@ class RunnerBigQueryTest extends BaseTableBackendTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile(),
             [],
             $outputs,
             null,

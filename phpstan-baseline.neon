@@ -776,26 +776,6 @@ parameters:
 			path: Tests/StorageApiHandler.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\TestUsageFile\\:\\:getUsageData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/TestUsageFile.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 1
-			path: Tests/TestUsageFile.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Tests\\\\TestUsageFile\\:\\:\\$dataDir has no type specified\\.$#"
-			count: 1
-			path: Tests/TestUsageFile.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Tests\\\\TestUsageFile\\:\\:\\$usage has no type specified\\.$#"
-			count: 1
-			path: Tests/TestUsageFile.php
-
-		-
 			message: "#^Cannot access offset 'id' on mixed\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/ABS/RunnerAbsTest.php
@@ -954,11 +934,6 @@ parameters:
 			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
 			count: 1
 			path: src/Docker/Configuration/State.php
-
-		-
-			message: "#^Call to method scalarNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"
-			count: 1
-			path: src/Docker/Configuration/Usage.php
 
 		-
 			message: "#^Call to method arrayNode\\(\\) on an unknown class Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\>\\.$#"

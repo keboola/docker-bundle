@@ -15,7 +15,6 @@ use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
@@ -195,7 +194,6 @@ class Runner
         string $action,
         string $mode,
         string $jobId,
-        UsageFileInterface $usageFile,
         array &$outputs,
         ?string $backendSize,
         bool $storeState,
@@ -219,8 +217,6 @@ class Runner
         if ($jobDefinition->getInputVariableValues()) {
             $currentOutput->setInputVariableValues($jobDefinition->getInputVariableValues());
         }
-
-        $usageFile->setDataDir($workingDirectory->getDataDir());
 
         $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
         $jobScopedEncryptor = new JobScopedEncryptor(
@@ -291,7 +287,6 @@ class Runner
                 $jobDefinition->getConfigVersion(),
                 $jobDefinition->getRowId(),
                 $component,
-                $usageFile,
                 $this->stagingWorkspace,
                 $inputDataLoader,
                 $outputDataLoader,
@@ -325,7 +320,6 @@ class Runner
         string $action,
         string $mode,
         string $jobId,
-        UsageFileInterface $usageFile,
         array $rowIds,
         array &$outputs,
         ?string $backendSize,
@@ -374,7 +368,6 @@ class Runner
                 $action,
                 $mode,
                 $jobId,
-                $usageFile,
                 $outputs,
                 $backendSize,
                 $storeState,
@@ -434,7 +427,6 @@ class Runner
         ?string $configVersion,
         ?string $rowId,
         ComponentSpecification $component,
-        UsageFileInterface $usageFile,
         ?StagingWorkspaceFacade $stagingWorkspace,
         ?InputDataLoader $inputDataLoader,
         ?OutputDataLoader $outputDataLoader,
@@ -463,7 +455,6 @@ class Runner
                 $configVersion,
                 $rowId,
                 $component,
-                $usageFile,
                 $workingDirectory,
                 $imageCreator,
                 $configFile,
@@ -525,7 +516,6 @@ class Runner
         ?string $configVersion,
         ?string $rowId,
         ComponentSpecification $component,
-        UsageFileInterface $usageFile,
         WorkingDirectory $workingDirectory,
         ImageCreator $imageCreator,
         ConfigFile $configFile,
@@ -673,9 +663,6 @@ class Runner
             } finally {
                 if ($image->getSourceComponent()->runAsRoot()) {
                     $workingDirectory->normalizePermissions();
-                }
-                if ($image->isMain()) {
-                    $usageFile->storeUsage();
                 }
             }
             $counter++;
