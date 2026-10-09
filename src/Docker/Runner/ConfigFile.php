@@ -61,8 +61,12 @@ class ConfigFile
             $this->checkImageParametersMisuse($imageParameters, $configData);
 
             $configData['image_parameters'] = $imageParameters;
-            if (!empty($configData['authorization'])) {
-                $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
+            $authorization = $this->authorization->getAuthorization(
+                $configData['authorization'] ?? [],
+                $configData['parameters'] ?? [],
+            );
+            if (!empty($configData['authorization']) || $authorization !== []) {
+                $configData['authorization'] = $authorization;
             } else {
                 unset($configData['authorization']);
             }

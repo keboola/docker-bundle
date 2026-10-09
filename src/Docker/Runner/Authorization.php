@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\GitHubApp\GitHubAppAuthorization;
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
@@ -20,13 +21,14 @@ class Authorization
         Credentials $client,
         JobScopedEncryptor $encryptor,
         string $componentId,
+        private readonly ?GitHubAppAuthorization $gitHubAppAuthorization = null,
     ) {
         $this->componentId = $componentId;
         $this->encryptor = $encryptor;
         $this->oauthClient = $client;
     }
 
-    public function getAuthorization(array $configData): array
+    public function getAuthorization(array $configData, array $parameters = []): array
     {
         $data = [];
 
@@ -55,6 +57,11 @@ class Authorization
                     }
                 }
             }
+        }
+
+        $gitHubAppAuthorization = $this->gitHubAppAuthorization?->getAuthorization($parameters);
+        if ($gitHubAppAuthorization !== null) {
+            $data['githubApp'] = $gitHubAppAuthorization;
         }
 
         return $data;

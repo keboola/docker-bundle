@@ -7,6 +7,8 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\Artifacts\Artifacts;
 use Keboola\Artifacts\ArtifactsException;
 use Keboola\Artifacts\Tags;
+use Keboola\DockerBundle\Docker\GitHubApp\GitHubAppAuthorization;
+use Keboola\DockerBundle\Docker\GitHubApp\GitHubAppTokenClient;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -73,6 +75,7 @@ class Runner
         int $minLogPort = 12202,
         int $maxLogPort = 13202,
         NetworkPolicy $stagingWorkspaceNetworkPolicy = NetworkPolicy::SYSTEM,
+        private readonly ?GitHubAppTokenClient $gitHubAppTokenClient = null,
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
@@ -229,7 +232,19 @@ class Runner
         );
 
         $configData = $jobDefinition->getConfiguration();
-        $authorization = new Authorization($this->oauthClient3, $jobScopedEncryptor, $component->getId());
+        $organizationId = $tokenInfo['organization']['id'] ?? null;
+        $authorization = new Authorization(
+            $this->oauthClient3,
+            $jobScopedEncryptor,
+            $component->getId(),
+            new GitHubAppAuthorization(
+                $this->gitHubAppTokenClient,
+                $jobScopedEncryptor,
+                $component,
+                $organizationId === null ? null : (string) $organizationId,
+                (string) $tokenInfo['owner']['id'],
+            ),
+        );
 
         $configFile = new ConfigFile(
             $workingDirectory->getDataDir(),

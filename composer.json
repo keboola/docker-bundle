@@ -21,6 +21,7 @@
         "keboola/oauth-v2-php-client": "^5.0",
         "keboola/object-encryptor": "^2.2",
         "keboola/output-mapping": "^27.0",
+        "keboola/php-api-client-base": "^1.1.2",
         "keboola/php-temp": "^2.0",
         "keboola/php-utils": "^5.0",
         "keboola/staging-provider": "^12.2.1",
