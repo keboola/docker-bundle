@@ -37,7 +37,7 @@ class GitHubAppAuthorization
             return null;
         }
 
-        if (!$this->component->allowGitHubAppGitAuth()) {
+        if (!$this->component->allowOrganizationGitHubAppAuth()) {
             throw new UserException(sprintf(
                 'Component "%s" does not support GitHub App authentication.',
                 $this->component->getId(),

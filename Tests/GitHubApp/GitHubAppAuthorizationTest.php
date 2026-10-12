@@ -59,7 +59,7 @@ class GitHubAppAuthorizationTest extends TestCase
         $authorization = new GitHubAppAuthorization(
             $tokenClient,
             $encryptor,
-            $this->createComponent(['github-app-git-auth']),
+            $this->createComponent(['organization-github-app-auth']),
             '123',
             '456',
         );
@@ -95,7 +95,7 @@ class GitHubAppAuthorizationTest extends TestCase
         $authorization = new GitHubAppAuthorization(
             $this->createTokenClientNeverCalled(),
             $this->createEncryptorNeverCalled(),
-            $this->createComponent(['github-app-git-auth']),
+            $this->createComponent(['organization-github-app-auth']),
             '123',
             '456',
         );
@@ -113,7 +113,7 @@ class GitHubAppAuthorizationTest extends TestCase
         $authorization = new GitHubAppAuthorization(
             null,
             $this->createEncryptorNeverCalled(),
-            $this->createComponent(['github-app-git-auth']),
+            $this->createComponent(['organization-github-app-auth']),
             '123',
             '456',
         );
@@ -129,7 +129,7 @@ class GitHubAppAuthorizationTest extends TestCase
         $authorization = new GitHubAppAuthorization(
             $this->createTokenClientNeverCalled(),
             $this->createEncryptorNeverCalled(),
-            $this->createComponent(['github-app-git-auth']),
+            $this->createComponent(['organization-github-app-auth']),
             null,
             '456',
         );
@@ -155,7 +155,7 @@ class GitHubAppAuthorizationTest extends TestCase
         $authorization = new GitHubAppAuthorization(
             $tokenClient,
             $encryptor,
-            $this->createComponent(['github-app-git-auth']),
+            $this->createComponent(['organization-github-app-auth']),
             '123',
             '456',
         );
@@ -194,7 +194,7 @@ class GitHubAppAuthorizationTest extends TestCase
             new GitHubAppAuthorization(
                 $tokenClient,
                 $encryptor,
-                $this->createComponent(['github-app-git-auth']),
+                $this->createComponent(['organization-github-app-auth']),
                 '123',
                 '456',
             ),
@@ -241,7 +241,7 @@ class GitHubAppAuthorizationTest extends TestCase
             new GitHubAppAuthorization(
                 $this->createTokenClientNeverCalled(),
                 $this->createEncryptorNeverCalled(),
-                $this->createComponent(['github-app-git-auth']),
+                $this->createComponent(['organization-github-app-auth']),
                 '123',
                 '456',
             ),
