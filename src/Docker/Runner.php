@@ -187,21 +187,20 @@ class Runner
     {
         /* This method is expected to be called from pcntl signal termination handler, which means that runs with
             the main thread paused and expecting it not to be resumed. */
-        // the component may have changed the direct-grant tables before it was terminated
+        // the component may have changed direct-grant tables
         $this->refreshDirectGrantMetadata($this->outputDataLoader);
         $this->stagingWorkspace?->cleanup();
     }
 
     /**
-     * Output mapping refreshes the metadata of direct-grant tables itself, this covers a run which does not get to
-     * the output mapping. The refresh needs the staging workspace, so it must finish before the workspace is dropped.
+     * For runs skipping output mapping. Must finish before the staging workspace is dropped.
      */
     private function refreshDirectGrantMetadata(?OutputDataLoader $outputDataLoader): void
     {
         try {
             $outputDataLoader?->refreshDirectGrantMetadata()->waitForAll();
         } catch (Throwable $e) {
-            // the failure of the job is the one to report
+            // report the job failure instead
             $this->loggersService->getLog()->warning(
                 'Failed to refresh metadata of direct-grant tables: ' . $e->getMessage(),
             );
@@ -503,7 +502,7 @@ class Runner
                     $workingDirectory->getDataDir(),
                     'stage_output',
                 );
-                // no output mapping in debug mode, but the component may have changed the direct-grant tables
+                // no output mapping in debug mode
                 $this->refreshDirectGrantMetadata($outputDataLoader);
             } else {
                 $tableQueue = $outputDataLoader?->storeOutput();
