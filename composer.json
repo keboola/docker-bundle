@@ -17,7 +17,7 @@
         "keboola/gelf-server": "^4.0",
         "keboola/input-mapping": "^23.0",
         "keboola/job-queue-artifacts": "^4.0",
-        "keboola/job-queue-job-configuration": "dev-ondra/AJDA-1938",
+        "keboola/job-queue-job-configuration": "^3.9",
         "keboola/oauth-v2-php-client": "^5.0",
         "keboola/object-encryptor": "^2.2",
         "keboola/output-mapping": "^27.12",
