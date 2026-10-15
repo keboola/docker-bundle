@@ -273,32 +273,32 @@ class LimitsTest extends TestCase
     {
         yield 'no backend' => [
             'containerType' => null,
-            'expectedMemoryLimit' => '1000M',
+            'expectedMemoryLimit' => '1024M',
             'expectedCpuLimit' => '2',
         ];
         yield 'xsmall backend' => [
             'containerType' => 'xsmall',
-            'expectedMemoryLimit' => '500M',
+            'expectedMemoryLimit' => '512M',
             'expectedCpuLimit' => '1',
         ];
         yield 'small backend' => [
             'containerType' => 'small',
-            'expectedMemoryLimit' => '1000M',
+            'expectedMemoryLimit' => '1024M',
             'expectedCpuLimit' => '2',
         ];
         yield 'medium backend' => [
             'containerType' => 'medium',
-            'expectedMemoryLimit' => '2000M',
+            'expectedMemoryLimit' => '2048M',
             'expectedCpuLimit' => '4',
         ];
         yield 'large backend' => [
             'containerType' => 'large',
-            'expectedMemoryLimit' => '7100M',
+            'expectedMemoryLimit' => '7270M',
             'expectedCpuLimit' => '14',
         ];
         yield 'invalid backend' => [
             'containerType' => 'unknown',
-            'expectedMemoryLimit' => '1000M',
+            'expectedMemoryLimit' => '1024M',
             'expectedCpuLimit' => '1',
         ];
     }

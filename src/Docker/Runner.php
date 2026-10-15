@@ -62,6 +62,7 @@ class Runner
     private ImageFactory $imageFactory;
     private NetworkPolicy $stagingWorkspaceNetworkPolicy;
     private ?StagingWorkspaceFacade $stagingWorkspace = null;
+    private ?OutputDataLoader $outputDataLoader = null;
 
     public function __construct(
         ObjectEncryptor $encryptor,
@@ -186,7 +187,24 @@ class Runner
     {
         /* This method is expected to be called from pcntl signal termination handler, which means that runs with
             the main thread paused and expecting it not to be resumed. */
+        // the component may have changed direct-grant tables
+        $this->refreshDirectGrantMetadata($this->outputDataLoader);
         $this->stagingWorkspace?->cleanup();
+    }
+
+    /**
+     * For runs skipping output mapping. Must finish before the staging workspace is dropped.
+     */
+    private function refreshDirectGrantMetadata(?OutputDataLoader $outputDataLoader): void
+    {
+        try {
+            $outputDataLoader?->refreshDirectGrantMetadata()->waitForAll();
+        } catch (Throwable $e) {
+            // report the job failure instead
+            $this->loggersService->getLog()->warning(
+                'Failed to refresh metadata of direct-grant tables: ' . $e->getMessage(),
+            );
+        }
     }
 
     private function runRow(
@@ -246,6 +264,7 @@ class Runner
         );
 
         $this->stagingWorkspace = $stagingWorkspace;
+        $this->outputDataLoader = $outputDataLoader;
 
         $dataDirUploader = new DataDirUploader(
             $this->clientWrapper->getBranchClient(),
@@ -309,6 +328,7 @@ class Runner
             throw $e;
         } finally {
             $this->stagingWorkspace = null;
+            $this->outputDataLoader = null;
         }
     }
 
@@ -482,6 +502,8 @@ class Runner
                     $workingDirectory->getDataDir(),
                     'stage_output',
                 );
+                // no output mapping in debug mode
+                $this->refreshDirectGrantMetadata($outputDataLoader);
             } else {
                 $tableQueue = $outputDataLoader?->storeOutput();
                 $output->setTableQueue($tableQueue);
@@ -500,6 +522,8 @@ class Runner
                 } catch (Throwable) {
                     throw $exception;
                 }
+            } else {
+                $this->refreshDirectGrantMetadata($outputDataLoader);
             }
             throw $exception;
         } finally {

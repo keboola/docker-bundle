@@ -145,8 +145,13 @@ class BranchedWorkspaceTest extends BaseRunnerTest
 
     private function cleanupAndCreateConfiguration(Components $componentsApi, Configuration $configuration)
     {
+        $componentId = $configuration->getComponentId();
+        $configurationId = $configuration->getConfigurationId();
+        self::assertIsString($componentId);
+        self::assertIsString($configurationId);
+
         try {
-            $componentsApi->deleteConfiguration($configuration->getComponentId(), $configuration->getConfigurationId());
+            $componentsApi->deleteConfiguration($componentId, $configurationId);
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;

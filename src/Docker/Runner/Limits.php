@@ -178,7 +178,7 @@ class Limits
 
     private function bytesToDockerMemoryLimit(int $memoryLimit): string
     {
-        return intval($memoryLimit / (10**6)) . 'M';
+        return intval($memoryLimit / (1024 ** 2)) . 'M';
     }
 
     private function getProjectMemoryLimit(Image $image)
